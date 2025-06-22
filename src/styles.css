@@ -211,6 +211,32 @@ h1 {
     min-width: 60px;
     text-align: center;
     border-right: 2px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+}
+
+.ticker-label::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: #ff0000;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .ticker-content {
@@ -228,8 +254,9 @@ h1 {
     font-size: 16px;
     font-weight: 400;
     line-height: 1;
-    padding-left: 100%;
+    transform: translateX(100%);
     animation: scroll-left 20s linear infinite;
+    -webkit-animation: scroll-left 20s linear infinite;
 }
 
 @keyframes scroll-left {
@@ -241,8 +268,20 @@ h1 {
     }
 }
 
+@-webkit-keyframes scroll-left {
+    0% {
+        -webkit-transform: translateX(0);
+        transform: translateX(0);
+    }
+    100% {
+        -webkit-transform: translateX(-100%);
+        transform: translateX(-100%);
+    }
+}
+
 .ticker-text:hover {
     animation-play-state: paused;
+    -webkit-animation-play-state: paused;
 }
 
 /* Footer Styles */
@@ -306,6 +345,12 @@ h1 {
         min-width: 50px;
     }
 
+    .ticker-label::before {
+        width: 6px;
+        height: 6px;
+        margin-right: 6px;
+    }
+
     .ticker-text {
         font-size: 14px;
     }
@@ -347,6 +392,12 @@ h1 {
         padding: 0 10px;
         font-size: 10px;
         min-width: 40px;
+    }
+
+    .ticker-label::before {
+        width: 5px;
+        height: 5px;
+        margin-right: 5px;
     }
 
     .ticker-text {

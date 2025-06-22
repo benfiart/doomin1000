@@ -337,6 +337,14 @@ function updateGrid(daysPassed) {
         currentContentDay = daysPassed;
         updateQuote(daysPassed);
         updateNews(daysPassed);
+        
+        // Track milestone reached
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'milestone_reached', {
+                'day_number': daysPassed,
+                'days_remaining': CONFIG.totalDays - daysPassed
+            });
+        }
     }
 }
 // ================================
@@ -366,6 +374,15 @@ async function initializeApp() {
         const dayToLoad = timeRemaining.daysPassed > 0 ? timeRemaining.daysPassed : 1;
         quoteTextElement.textContent = 'Loading today\'s reflection...';
         tickerTextElement.textContent = 'Loading AI news...';
+        
+        // Track app initialization
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'app_initialized', {
+                'days_remaining': timeRemaining.days,
+                'days_passed': timeRemaining.daysPassed
+            });
+        }
+        
         try {
             await updateQuote(dayToLoad);
             await updateNews(dayToLoad);
