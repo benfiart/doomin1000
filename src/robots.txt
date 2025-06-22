@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://doomin1000.com/sitemap.xml

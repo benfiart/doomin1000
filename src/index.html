@@ -70,17 +70,35 @@ S&J
     <meta name="theme-color" content="#ff0000">
     
     <title>Doom in 1000 - Countdown to Transformation</title>
+    
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap"></noscript>
+    
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/img/favicon.png">
     
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-51NKHKLGNK"></script>
+    <!-- Defer Google Analytics until after page load -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-51NKHKLGNK');
+      
+      // Load GA after page load
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-51NKHKLGNK';
+          document.head.appendChild(script);
+          
+          script.onload = function() {
+            gtag('js', new Date());
+            gtag('config', 'G-51NKHKLGNK');
+          };
+        }, 1000);
+      });
     </script>
 </head>
 <body>

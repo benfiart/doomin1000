@@ -17,7 +17,7 @@ const CONFIG = {
     fadeInDuration: 500,
     gridAnimationDuration: 500,
     // Grid performance settings
-    initialGridItems: 500,
+    initialGridItems: 300,
     gridBatchSize: 100,
     gridBatchDelay: 50,
     gridLoadDelay: 100,
