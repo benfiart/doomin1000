@@ -48,7 +48,8 @@ S&J
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Viewport optimized for PWA iOS experience -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta property="og:title" content="Doom in 1000 - Countdown to Transformation">
     <meta property="og:description" content="A 1000-day countdown to transformation. Track daily progress with AI-generated quotes and news. Change is exponential, irreversible, and accelerating.">
     <meta property="og:image" content="img/Dooms.png">
@@ -83,23 +84,33 @@ S&J
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- iOS PWA Meta Tags -->
+    <!-- iOS PWA Meta Tags - Critical for iOS Recognition -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Doom in 1000">
     <meta name="format-detection" content="telephone=no">
-    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/img/icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="/img/icon-96x96.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="/img/icon-128x128.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/img/icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/img/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="/img/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="384x384" href="/img/icon-384x384.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="/img/icon-512x512.png">
+    <meta name="apple-touch-fullscreen" content="yes">
     
-    <!-- iOS Splash Screens -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <!-- iOS touch experience optimization -->
+    
+    <!-- iOS Icons - Order matters for iOS -->
+    <link rel="apple-touch-icon" href="/img/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/img/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/img/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/img/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/img/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/img/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/img/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/img/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/img/icon-72x72.png">
+    
+    <!-- iOS Launch Images / Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/img/icon-512x512.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/img/icon-512x512.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/img/icon-512x512.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/img/icon-512x512.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/img/icon-512x512.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
     
     <!-- Additional PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -208,17 +219,62 @@ S&J
 
     <script src="app.js"></script>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Service Worker Registration - iOS Compatible -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }, function(err) {
-              console.log('ServiceWorker registration failed: ', err);
+          navigator.serviceWorker.register('/sw.js', {
+            scope: '/'
+          })
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            
+            // Handle updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('New service worker available');
+                    // Optionally notify user of update
+                  }
+                });
+              }
             });
+          })
+          .catch(function(err) {
+            console.error('ServiceWorker registration failed: ', err);
+          });
+          
+          // Handle service worker messages
+          navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data && event.data.type === 'CACHE_UPDATED') {
+              console.log('Cache updated by service worker');
+            }
+          });
         });
+        
+        // Add iOS 17 cache clearing mechanism
+        window.clearPWACache = function() {
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = (event) => {
+              if (event.data.success) {
+                console.log('Cache cleared successfully');
+                window.location.reload();
+              } else {
+                console.error('Cache clear failed:', event.data.error);
+              }
+            };
+            
+            navigator.serviceWorker.controller.postMessage(
+              { type: 'CLEAR_CACHE' },
+              [messageChannel.port2]
+            );
+          }
+        };
+      } else {
+        console.log('Service Worker not supported');
       }
     </script>
 </body>
