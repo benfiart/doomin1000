@@ -385,17 +385,19 @@ let countdownInterval;
 function manageInstallInfo() {
     const installInfo = document.getElementById('install-info');
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                        window.navigator.standalone === true;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
     
     if (installInfo) {
         // Hide install info if app is already installed
         if (isStandalone) {
             installInfo.style.display = 'none';
-        } else if (isIOS) {
+        }
+        else if (isIOS) {
             // Show iOS-specific instructions
             installInfo.style.display = 'block';
-        } else {
+        }
+        else {
             // Hide for non-iOS devices (they get browser install prompts)
             installInfo.style.display = 'none';
         }
@@ -413,9 +415,16 @@ window.addEventListener('appinstalled', () => {
     if (installInfo) {
         installInfo.style.display = 'none';
     }
-    
     if (typeof window.gtag !== 'undefined') {
         window.gtag('event', 'pwa_installed_successfully');
     }
 });
+
+// For debugging - allow manual install info display
+window.showInstallInfo = function() {
+    const installInfo = document.getElementById('install-info');
+    if (installInfo) {
+        installInfo.style.display = 'block';
+    }
+};
 document.addEventListener('DOMContentLoaded', initializeApp);

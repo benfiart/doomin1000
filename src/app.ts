@@ -504,119 +504,42 @@ async function initializeApp(): Promise<void> {
 let countdownInterval: number;
 
 // ================================
-// PWA INSTALL PROMPT
+// PWA INSTALL INFO
 // ================================
-
-let deferredPrompt: any;
-let installButton: HTMLButtonElement;
-
-function createInstallButton(): void {
-    installButton = document.createElement('button');
-    
-    // Detect iOS
+function manageInstallInfo(): void {
+    const installInfo = document.getElementById('install-info') as HTMLElement;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        (window.navigator as any).standalone === true;
     
-    if (isIOS && !isStandalone) {
-        installButton.innerHTML = '📱 Install: Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>';
-    } else {
-        installButton.textContent = '📱 Install App';
-    }
-    
-    installButton.className = 'install-button';
-    installButton.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #ff0000;
-        color: white;
-        border: none;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 400;
-        font-size: 12px;
-        cursor: pointer;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
-        transition: all 0.3s ease;
-        display: none;
-        max-width: 280px;
-        text-align: center;
-        line-height: 1.3;
-    `;
-    
-    installButton.addEventListener('mouseover', () => {
-        installButton.style.transform = 'scale(1.05)';
-        installButton.style.boxShadow = '0 6px 16px rgba(255, 0, 0, 0.4)';
-    });
-    
-    installButton.addEventListener('mouseout', () => {
-        installButton.style.transform = 'scale(1)';
-        installButton.style.boxShadow = '0 4px 12px rgba(255, 0, 0, 0.3)';
-    });
-    
-    installButton.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            
-            if (typeof (window as any).gtag !== 'undefined') {
-                (window as any).gtag('event', 'pwa_install_prompt', {
-                    'install_outcome': outcome
-                });
-            }
-            
-            deferredPrompt = null;
-            installButton.style.display = 'none';
+    if (installInfo) {
+        // Hide install info if app is already installed
+        if (isStandalone) {
+            installInfo.style.display = 'none';
+        } else if (isIOS) {
+            // Show iOS-specific instructions
+            installInfo.style.display = 'block';
+        } else {
+            // Hide for non-iOS devices (they get browser install prompts)
+            installInfo.style.display = 'none';
         }
-    });
-    
-    document.body.appendChild(installButton);
+    }
 }
 
-window.addEventListener('beforeinstallprompt', (e: Event) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    if (!installButton) {
-        createInstallButton();
-    }
-    
-    // Show install button after a delay
-    setTimeout(() => {
-        installButton.style.display = 'block';
-    }, 5000);
-    
-    if (typeof (window as any).gtag !== 'undefined') {
-        (window as any).gtag('event', 'pwa_install_prompt_shown');
-    }
-});
-
-// For iOS devices, show install instructions since they don't support beforeinstallprompt
+// Initialize install info on page load
 document.addEventListener('DOMContentLoaded', () => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
-    if (isIOS && !isStandalone) {
-        // Show install button for iOS after a delay
-        setTimeout(() => {
-            if (!installButton) {
-                createInstallButton();
-            }
-            installButton.style.display = 'block';
-        }, 3000);
-    }
+    setTimeout(manageInstallInfo, 1000);
 });
 
+// Handle app installation
 window.addEventListener('appinstalled', () => {
-    deferredPrompt = null;
-    if (installButton) {
-        installButton.style.display = 'none';
+    const installInfo = document.getElementById('install-info') as HTMLElement;
+    if (installInfo) {
+        installInfo.style.display = 'none';
     }
     
     if (typeof (window as any).gtag !== 'undefined') {
-        (window as any).gtag('event', 'pwa_installed');
+        (window as any).gtag('event', 'pwa_installed_successfully');
     }
 });
 
