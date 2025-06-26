@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Doomsday Countdown App
  * A countdown timer to a preset doomsday date, 1000 days from a fixed start point.
@@ -17,7 +16,7 @@ const CONFIG = {
     fadeInDuration: 500,
     gridAnimationDuration: 500,
     // Grid performance settings
-    initialGridItems: 300,
+    initialGridItems: 500,
     gridBatchSize: 100,
     gridBatchDelay: 50,
     gridLoadDelay: 100,
@@ -337,14 +336,6 @@ function updateGrid(daysPassed) {
         currentContentDay = daysPassed;
         updateQuote(daysPassed);
         updateNews(daysPassed);
-        
-        // Track milestone reached
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'milestone_reached', {
-                'day_number': daysPassed,
-                'days_remaining': CONFIG.totalDays - daysPassed
-            });
-        }
     }
 }
 // ================================
@@ -374,15 +365,6 @@ async function initializeApp() {
         const dayToLoad = timeRemaining.daysPassed > 0 ? timeRemaining.daysPassed : 1;
         quoteTextElement.textContent = 'Loading today\'s reflection...';
         tickerTextElement.textContent = 'Loading AI news...';
-        
-        // Track app initialization
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'app_initialized', {
-                'days_remaining': timeRemaining.days,
-                'days_passed': timeRemaining.daysPassed
-            });
-        }
-        
         try {
             await updateQuote(dayToLoad);
             await updateNews(dayToLoad);
@@ -397,4 +379,76 @@ async function initializeApp() {
     }
 }
 let countdownInterval;
+// ================================
+// PWA INSTALL PROMPT
+// ================================
+let deferredPrompt;
+let installButton;
+function createInstallButton() {
+    installButton = document.createElement('button');
+    installButton.textContent = '📱 Install App';
+    installButton.className = 'install-button';
+    installButton.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #ff0000;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 400;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        display: none;
+    `;
+    installButton.addEventListener('mouseover', () => {
+        installButton.style.transform = 'scale(1.05)';
+        installButton.style.boxShadow = '0 6px 16px rgba(255, 0, 0, 0.4)';
+    });
+    installButton.addEventListener('mouseout', () => {
+        installButton.style.transform = 'scale(1)';
+        installButton.style.boxShadow = '0 4px 12px rgba(255, 0, 0, 0.3)';
+    });
+    installButton.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (typeof window.gtag !== 'undefined') {
+                window.gtag('event', 'pwa_install_prompt', {
+                    'install_outcome': outcome
+                });
+            }
+            deferredPrompt = null;
+            installButton.style.display = 'none';
+        }
+    });
+    document.body.appendChild(installButton);
+}
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!installButton) {
+        createInstallButton();
+    }
+    // Show install button after a delay
+    setTimeout(() => {
+        installButton.style.display = 'block';
+    }, 5000);
+    if (typeof window.gtag !== 'undefined') {
+        window.gtag('event', 'pwa_install_prompt_shown');
+    }
+});
+window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    if (installButton) {
+        installButton.style.display = 'none';
+    }
+    if (typeof window.gtag !== 'undefined') {
+        window.gtag('event', 'pwa_installed');
+    }
+});
 document.addEventListener('DOMContentLoaded', initializeApp);

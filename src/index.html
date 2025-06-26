@@ -80,6 +80,32 @@ S&J
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/img/favicon.png">
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Doom in 1000">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/img/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/img/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/img/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/img/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/img/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/img/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/img/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/img/icon-512x512.png">
+    
+    <!-- iOS Splash Screens -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <!-- Additional PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Doom in 1000">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-TileImage" content="/img/icon-144x144.png">
+    
     <!-- Defer Google Analytics until after page load -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -180,5 +206,19 @@ S&J
     </script>
 
     <script src="app.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
 </body>
 </html>
