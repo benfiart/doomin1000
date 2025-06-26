@@ -10,14 +10,6 @@
   "scope": "/",
   "lang": "en",
   "categories": ["lifestyle", "productivity", "utilities"],
-  "screenshots": [
-    {
-      "src": "/img/Dooms.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ],
   "icons": [
     {
       "src": "/img/icon-72x72.png",

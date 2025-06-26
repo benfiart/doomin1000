@@ -386,7 +386,15 @@ let deferredPrompt;
 let installButton;
 function createInstallButton() {
     installButton = document.createElement('button');
-    installButton.textContent = '📱 Install App';
+    // Detect iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isIOS && !isStandalone) {
+        installButton.innerHTML = '📱 Install: Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>';
+    }
+    else {
+        installButton.textContent = '📱 Install App';
+    }
     installButton.className = 'install-button';
     installButton.style.cssText = `
         position: fixed;
@@ -395,15 +403,19 @@ function createInstallButton() {
         background: #ff0000;
         color: white;
         border: none;
-        padding: 12px 20px;
-        border-radius: 25px;
+        padding: 12px 16px;
+        border-radius: 8px;
         font-family: 'Montserrat', sans-serif;
         font-weight: 400;
+        font-size: 12px;
         cursor: pointer;
         z-index: 1000;
         box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
         transition: all 0.3s ease;
         display: none;
+        max-width: 280px;
+        text-align: center;
+        line-height: 1.3;
     `;
     installButton.addEventListener('mouseover', () => {
         installButton.style.transform = 'scale(1.05)';
@@ -440,6 +452,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }, 5000);
     if (typeof window.gtag !== 'undefined') {
         window.gtag('event', 'pwa_install_prompt_shown');
+    }
+});
+// For iOS devices, show install instructions since they don't support beforeinstallprompt
+document.addEventListener('DOMContentLoaded', () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isIOS && !isStandalone) {
+        // Show install button for iOS after a delay
+        setTimeout(() => {
+            if (!installButton) {
+                createInstallButton();
+            }
+            installButton.style.display = 'block';
+        }, 3000);
     }
 });
 window.addEventListener('appinstalled', () => {
