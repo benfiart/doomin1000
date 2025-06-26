@@ -504,43 +504,7 @@ async function initializeApp(): Promise<void> {
 let countdownInterval: number;
 
 // ================================
-// PWA INSTALL INFO
+// PWA UTILITIES
 // ================================
-function manageInstallInfo(): void {
-    const installInfo = document.getElementById('install-info') as HTMLElement;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                        (window.navigator as any).standalone === true;
-    
-    if (installInfo) {
-        // Hide install info if app is already installed
-        if (isStandalone) {
-            installInfo.style.display = 'none';
-        } else if (isIOS) {
-            // Show iOS-specific instructions
-            installInfo.style.display = 'block';
-        } else {
-            // Hide for non-iOS devices (they get browser install prompts)
-            installInfo.style.display = 'none';
-        }
-    }
-}
-
-// Initialize install info on page load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(manageInstallInfo, 1000);
-});
-
-// Handle app installation
-window.addEventListener('appinstalled', () => {
-    const installInfo = document.getElementById('install-info') as HTMLElement;
-    if (installInfo) {
-        installInfo.style.display = 'none';
-    }
-    
-    if (typeof (window as any).gtag !== 'undefined') {
-        (window as any).gtag('event', 'pwa_installed_successfully');
-    }
-});
 
 document.addEventListener('DOMContentLoaded', initializeApp);
