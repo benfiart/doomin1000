@@ -1,4 +1,4 @@
-/* Global Styles */
+/* Global Styles - Updated 2025-06-27-15:30 */
 /* Fonts loaded via preload in HTML */
 
 :root {
@@ -335,7 +335,7 @@ h1 {
     }
 
     .container {
-        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px);
+        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px) !important;
     }
 
     h1 {
@@ -395,7 +395,7 @@ h1 {
     }
 
     .container {
-        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px);
+        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px) !important;
     }
 
     .timer-unit {

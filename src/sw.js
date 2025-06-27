@@ -1,5 +1,5 @@
-const CACHE_NAME = 'doomin1000-v4';
-const CACHE_VERSION = 4;
+const CACHE_NAME = 'doomin1000-v5';
+const CACHE_VERSION = 5;
 const STATIC_CACHE = `doomin1000-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `doomin1000-dynamic-v${CACHE_VERSION}`;
 
@@ -51,6 +51,33 @@ self.addEventListener('install', (event) => {
       self.skipWaiting();
     }).catch((error) => {
       console.error('Service Worker installation failed:', error);
+    })
+  );
+});
+
+// Activate event - force complete cache clear
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker v5 activating - forcing complete cache clear...');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      console.log('Deleting ALL caches:', cacheNames);
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Deleting cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      console.log('All caches cleared, taking control');
+      return self.clients.claim();
+    }).then(() => {
+      // Force reload all tabs
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          console.log('Sending reload message to client');
+          client.postMessage({ type: 'FORCE_RELOAD' });
+        });
+      });
     })
   );
 });

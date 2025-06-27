@@ -78,7 +78,7 @@ S&J
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap"></noscript>
     
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=5&t=1719519030">
     <link rel="icon" href="/img/favicon.png">
     
     <!-- PWA Manifest -->
@@ -253,6 +253,9 @@ S&J
           navigator.serviceWorker.addEventListener('message', event => {
             if (event.data && event.data.type === 'CACHE_UPDATED') {
               console.log('Cache updated by service worker');
+            } else if (event.data && event.data.type === 'FORCE_RELOAD') {
+              console.log('Service worker requesting force reload');
+              window.location.reload(true);
             }
           });
         });
