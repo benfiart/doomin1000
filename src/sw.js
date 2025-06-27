@@ -1,5 +1,5 @@
-const CACHE_NAME = 'doomin1000-v8';
-const CACHE_VERSION = 8;
+const CACHE_NAME = 'doomin1000-v9';
+const CACHE_VERSION = 9;
 const STATIC_CACHE = `doomin1000-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `doomin1000-dynamic-v${CACHE_VERSION}`;
 

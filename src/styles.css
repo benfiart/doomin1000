@@ -195,7 +195,7 @@ h1 {
 /* News Ticker Styles */
 .news-ticker {
     position: fixed;
-    bottom: 0;
+    bottom: 10px;
     left: 0;
     width: 100%;
     height: 50px;
