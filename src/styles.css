@@ -335,7 +335,10 @@ h1 {
     }
 
     .container {
-        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px) !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        padding-left: env(safe-area-inset-left, 20px) !important;
+        padding-right: env(safe-area-inset-right, 20px) !important;
     }
 
     h1 {
@@ -395,7 +398,10 @@ h1 {
     }
 
     .container {
-        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px) !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        padding-left: env(safe-area-inset-left, 20px) !important;
+        padding-right: env(safe-area-inset-right, 20px) !important;
     }
 
     .timer-unit {
