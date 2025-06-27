@@ -335,8 +335,16 @@ h1 {
     }
 
     .container {
-        padding-left: max(20px, env(safe-area-inset-left, 0px)) !important;
-        padding-right: max(20px, env(safe-area-inset-right, 0px)) !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+    
+    /* iPhone notch support - only if env() is supported */
+    @supports (padding-left: env(safe-area-inset-left)) {
+        .container {
+            padding-left: max(20px, env(safe-area-inset-left)) !important;
+            padding-right: max(20px, env(safe-area-inset-right)) !important;
+        }
     }
 
     h1 {
@@ -396,8 +404,16 @@ h1 {
     }
 
     .container {
-        padding-left: max(20px, env(safe-area-inset-left, 0px)) !important;
-        padding-right: max(20px, env(safe-area-inset-right, 0px)) !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+    
+    /* iPhone notch support - only if env() is supported */
+    @supports (padding-left: env(safe-area-inset-left)) {
+        .container {
+            padding-left: max(20px, env(safe-area-inset-left)) !important;
+            padding-right: max(20px, env(safe-area-inset-right)) !important;
+        }
     }
 
     .timer-unit {
