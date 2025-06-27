@@ -26,7 +26,7 @@ body {
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) max(env(safe-area-inset-bottom, 70px), 70px) env(safe-area-inset-left, 20px);
+    padding: env(safe-area-inset-top, 20px) 0 max(env(safe-area-inset-bottom, 70px), 70px) 0;
 }
 
 .container {
@@ -34,6 +34,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     text-align: center;
+    box-sizing: border-box;
+    padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px);
 }
 
 header {
@@ -329,7 +331,11 @@ h1 {
 /* Responsive Styles */
 @media (max-width: 768px) {
     body {
-        padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) max(env(safe-area-inset-bottom, 65px), 65px) env(safe-area-inset-left, 20px);
+        padding: env(safe-area-inset-top, 20px) 0 max(env(safe-area-inset-bottom, 65px), 65px) 0;
+    }
+
+    .container {
+        padding: 0 env(safe-area-inset-right, 20px) 0 env(safe-area-inset-left, 20px);
     }
 
     h1 {
@@ -386,7 +392,11 @@ h1 {
 
 @media (max-width: 480px) {
     body {
-        padding: env(safe-area-inset-top, 15px) env(safe-area-inset-right, 15px) max(env(safe-area-inset-bottom, 60px), 60px) env(safe-area-inset-left, 15px);
+        padding: env(safe-area-inset-top, 15px) 0 max(env(safe-area-inset-bottom, 60px), 60px) 0;
+    }
+
+    .container {
+        padding: 0 env(safe-area-inset-right, 15px) 0 env(safe-area-inset-left, 15px);
     }
 
     .timer-unit {
