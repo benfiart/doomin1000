@@ -329,7 +329,7 @@ h1 {
 /* Responsive Styles */
 @media (max-width: 768px) {
     body {
-        padding: env(safe-area-inset-top, 15px) env(safe-area-inset-right, 15px) max(env(safe-area-inset-bottom, 65px), 65px) env(safe-area-inset-left, 15px);
+        padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) max(env(safe-area-inset-bottom, 65px), 65px) env(safe-area-inset-left, 20px);
     }
 
     h1 {
@@ -386,7 +386,7 @@ h1 {
 
 @media (max-width: 480px) {
     body {
-        padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 10px) max(env(safe-area-inset-bottom, 60px), 60px) env(safe-area-inset-left, 10px);
+        padding: env(safe-area-inset-top, 15px) env(safe-area-inset-right, 15px) max(env(safe-area-inset-bottom, 60px), 60px) env(safe-area-inset-left, 15px);
     }
 
     .timer-unit {
