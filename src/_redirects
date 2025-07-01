@@ -1,0 +1,6 @@
+# Clean URL redirects
+/chat   /chat.html   200
+/       /index.html  200
+
+# Fallback for SPA routing
+/*      /index.html  404
