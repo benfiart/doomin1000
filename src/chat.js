@@ -14,7 +14,7 @@ class IRCChat {
         this.loadMessagesFromServer();
         this.loadNickname();
         
-        // Set up real-time WebSocket subscriptions
+        // Set up real-time broadcast subscriptions
         this.setupRealtimeSubscription();
         
         // Check connection status
@@ -336,35 +336,33 @@ class IRCChat {
                 config.supabaseAnonKey
             );
 
-            // Subscribe to postgres changes on messages table
-            console.log('Setting up postgres changes subscription...');
+            // Subscribe to broadcast events via pg_notify
+            console.log('Setting up broadcast subscription via pg_notify...');
             this.subscription = this.supabaseClient
-                .channel('messages-channel')
-                .on('postgres_changes', {
-                    event: '*',
-                    schema: 'public',
-                    table: 'messages'
+                .channel('realtime:messages-channel')
+                .on('broadcast', {
+                    event: '*'
                 }, (payload) => {
-                    console.log('Database change received:', payload);
-                    if (payload.eventType === 'INSERT') {
-                        console.log('New message via postgres changes:', payload.new);
-                        this.handleNewMessage(payload.new);
-                    } else if (payload.eventType === 'DELETE') {
-                        console.log('Message deleted via postgres changes:', payload.old);
+                    console.log('Broadcast event received:', payload);
+                    if (payload.event === 'INSERT') {
+                        console.log('New message via broadcast:', payload.payload);
+                        this.handleNewMessage(payload.payload);
+                    } else if (payload.event === 'DELETE') {
+                        console.log('Message deleted via broadcast:', payload.payload);
                         this.handleMessagesCleared();
                     }
                 })
                 .subscribe((status) => {
-                    console.log('Postgres changes subscription status:', status);
+                    console.log('Broadcast subscription status:', status);
                     if (status === 'SUBSCRIBED') {
-                        console.log('✅ Postgres changes successfully subscribed');
+                        console.log('✅ Broadcast successfully subscribed');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('❌ Postgres changes error - falling back to polling');
+                        console.error('❌ Broadcast error - falling back to polling');
                         this.startPolling();
                     }
                 });
 
-            console.log('Real-time postgres changes subscription set up successfully');
+            console.log('Real-time broadcast subscription set up successfully');
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
             // Fallback to polling if real-time fails
@@ -373,7 +371,7 @@ class IRCChat {
     }
 
     handleNewMessage(newMessage) {
-        console.log('Processing new postgres changes message:', newMessage);
+        console.log('Processing new broadcast message:', newMessage);
         
         // Add the new message to our local array
         const message = {
@@ -384,17 +382,17 @@ class IRCChat {
             timestamp: new Date(newMessage.created_at)
         };
         
-        console.log('Formatted postgres changes message:', message);
+        console.log('Formatted broadcast message:', message);
         
         // Check if we already have this message (avoid duplicates)
         const exists = this.messages.find(msg => msg.id === message.id);
         if (!exists) {
-            console.log('Adding new postgres changes message to UI');
+            console.log('Adding new broadcast message to UI');
             this.messages.push(message);
             this.renderMessage(message);
             this.scrollToBottom();
         } else {
-            console.log('Postgres changes message already exists, skipping duplicate');
+            console.log('Broadcast message already exists, skipping duplicate');
         }
     }
 
