@@ -13,6 +13,9 @@ class IRCChat {
         this.loadMessagesFromServer();
         this.loadNickname();
         
+        // Start real-time polling for new messages
+        this.startPolling();
+        
         // Check connection status
         window.addEventListener('online', () => {
             this.isOnline = true;
@@ -302,12 +305,49 @@ class IRCChat {
         // When back online, reload messages from server
         await this.loadMessagesFromServer();
     }
+
+    startPolling() {
+        // Poll for new messages every 3 seconds
+        this.pollingInterval = setInterval(async () => {
+            if (this.isOnline) {
+                try {
+                    const response = await fetch('/.netlify/functions/get-messages');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.messages) {
+                            // Only update if we have different number of messages
+                            if (data.messages.length !== this.messages.length) {
+                                this.messages = data.messages.map(msg => ({
+                                    ...msg,
+                                    timestamp: new Date(msg.timestamp)
+                                }));
+                                this.renderAllMessages();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Polling error:', error);
+                }
+            }
+        }, 3000); // Poll every 3 seconds
+    }
+
+    stopPolling() {
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+    }
 }
 
 // Initialize chat when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Only initialize if we're on the chat page
     if (document.getElementById('messages')) {
-        new IRCChat();
+        const chat = new IRCChat();
+        
+        // Clean up polling when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            chat.stopPolling();
+        });
     }
 });
