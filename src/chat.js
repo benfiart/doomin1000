@@ -8,13 +8,14 @@ class IRCChat {
         this.clearChatButton = document.getElementById('clearChatButton');
         this.changeNicknameButton = document.getElementById('changeNicknameButton');
         this.isOnline = navigator.onLine;
+        this.supabaseClient = null;
         
         this.initializeEventListeners();
         this.loadMessagesFromServer();
         this.loadNickname();
         
-        // Start real-time polling for new messages
-        this.startPolling();
+        // Set up real-time WebSocket subscriptions
+        this.setupRealtimeSubscription();
         
         // Check connection status
         window.addEventListener('online', () => {
@@ -306,8 +307,71 @@ class IRCChat {
         await this.loadMessagesFromServer();
     }
 
+    async setupRealtimeSubscription() {
+        try {
+            // Import Supabase client directly in the browser
+            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            
+            // Initialize Supabase client for real-time
+            this.supabaseClient = createClient(
+                'https://fonzafdyoxvbqatkqtsi.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbnphZmR5b3h2YnFhdGtxdHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MDI3MjcsImV4cCI6MjA2Njk3ODcyN30.CymhfkaBo23FuTDaKsjb3WNLhKq28kLBJLOQGdNRwOc'
+            );
+
+            // Subscribe to real-time changes on messages table
+            this.subscription = this.supabaseClient
+                .channel('messages-channel')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages'
+                }, (payload) => {
+                    console.log('New message received:', payload);
+                    this.handleNewMessage(payload.new);
+                })
+                .on('postgres_changes', {
+                    event: 'DELETE',
+                    schema: 'public', 
+                    table: 'messages'
+                }, (payload) => {
+                    console.log('Messages cleared:', payload);
+                    this.handleMessagesCleared();
+                })
+                .subscribe();
+
+            console.log('Real-time subscription set up successfully');
+        } catch (error) {
+            console.error('Failed to set up real-time subscription:', error);
+            // Fallback to polling if real-time fails
+            this.startPolling();
+        }
+    }
+
+    handleNewMessage(newMessage) {
+        // Add the new message to our local array
+        const message = {
+            ...newMessage,
+            timestamp: new Date(newMessage.created_at)
+        };
+        
+        // Check if we already have this message (avoid duplicates)
+        const exists = this.messages.find(msg => msg.id === message.id);
+        if (!exists) {
+            this.messages.push(message);
+            this.renderMessage(message);
+            this.scrollToBottom();
+        }
+    }
+
+    handleMessagesCleared() {
+        // All messages were deleted, clear the UI
+        this.messages = [];
+        this.messagesContainer.innerHTML = '<div class="status">Chat history cleared.</div>';
+    }
+
     startPolling() {
-        // Poll for new messages every 3 seconds
+        // Fallback polling method (only used if WebSocket fails)
+        console.log('Falling back to polling method');
         this.pollingInterval = setInterval(async () => {
             if (this.isOnline) {
                 try {
@@ -315,7 +379,6 @@ class IRCChat {
                     if (response.ok) {
                         const data = await response.json();
                         if (data.success && data.messages) {
-                            // Only update if we have different number of messages
                             if (data.messages.length !== this.messages.length) {
                                 this.messages = data.messages.map(msg => ({
                                     ...msg,
@@ -329,10 +392,13 @@ class IRCChat {
                     console.warn('Polling error:', error);
                 }
             }
-        }, 3000); // Poll every 3 seconds
+        }, 3000);
     }
 
-    stopPolling() {
+    stopRealtimeSubscription() {
+        if (this.subscription) {
+            this.supabaseClient.removeChannel(this.subscription);
+        }
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
         }
@@ -345,9 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('messages')) {
         const chat = new IRCChat();
         
-        // Clean up polling when page is unloaded
+        // Clean up real-time subscription when page is unloaded
         window.addEventListener('beforeunload', () => {
-            chat.stopPolling();
+            chat.stopRealtimeSubscription();
         });
     }
 });
