@@ -336,31 +336,27 @@ class IRCChat {
                 config.supabaseAnonKey
             );
 
-            // Subscribe to real-time changes on messages table
-            console.log('Setting up subscription channel...');
+            // Subscribe to broadcast events on messages channel
+            console.log('Setting up broadcast subscription channel...');
             this.subscription = this.supabaseClient
                 .channel('messages-channel')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages'
+                .on('broadcast', {
+                    event: 'INSERT'
                 }, (payload) => {
-                    console.log('New message received via WebSocket:', payload);
-                    this.handleNewMessage(payload.new);
+                    console.log('New message received via broadcast:', payload);
+                    this.handleNewMessage(payload.payload);
                 })
-                .on('postgres_changes', {
-                    event: 'DELETE',
-                    schema: 'public', 
-                    table: 'messages'
+                .on('broadcast', {
+                    event: 'DELETE'
                 }, (payload) => {
-                    console.log('Messages cleared via WebSocket:', payload);
+                    console.log('Messages cleared via broadcast:', payload);
                     this.handleMessagesCleared();
                 })
                 .subscribe((status) => {
-                    console.log('Subscription status:', status);
+                    console.log('Broadcast subscription status:', status);
                 });
 
-            console.log('Real-time subscription set up successfully');
+            console.log('Real-time broadcast subscription set up successfully');
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
             // Fallback to polling if real-time fails
@@ -369,7 +365,7 @@ class IRCChat {
     }
 
     handleNewMessage(newMessage) {
-        console.log('Processing new message:', newMessage);
+        console.log('Processing new broadcast message:', newMessage);
         
         // Add the new message to our local array
         const message = {
@@ -380,17 +376,17 @@ class IRCChat {
             timestamp: new Date(newMessage.created_at)
         };
         
-        console.log('Formatted message:', message);
+        console.log('Formatted broadcast message:', message);
         
         // Check if we already have this message (avoid duplicates)
         const exists = this.messages.find(msg => msg.id === message.id);
         if (!exists) {
-            console.log('Adding new message to UI');
+            console.log('Adding new broadcast message to UI');
             this.messages.push(message);
             this.renderMessage(message);
             this.scrollToBottom();
         } else {
-            console.log('Message already exists, skipping duplicate');
+            console.log('Broadcast message already exists, skipping duplicate');
         }
     }
 
