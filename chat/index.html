@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOOM ROOM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #111;
+            padding: 15px;
+            border-bottom: 2px solid #cc0000;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #cc0000;
+            font-size: 24px;
+            text-shadow: 0 0 10px #cc0000;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex-grow: 1;
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            max-height: calc(100vh - 200px);
+        }
+
+        .message {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .message .nickname {
+            font-weight: bold;
+        }
+
+        .message .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .message .text {
+            color: #fff;
+            margin-left: 10px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nickname-input {
+            background-color: #222;
+            border: 1px solid #cc0000;
+            border-radius: 3px;
+            color: #fff;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            width: 150px;
+        }
+
+        .nickname-input:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 5px #cc0000;
+        }
+
+        .message-input {
+            flex-grow: 1;
+            background-color: #222;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fff;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #cc0000;
+            box-shadow: 0 0 5px #cc0000;
+        }
+
+        .send-button {
+            background-color: #cc0000;
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover {
+            background-color: #ff0000;
+        }
+
+        .send-button:active {
+            background-color: #990000;
+        }
+
+        .clear-chat-button, .change-nickname-button {
+            background-color: #444;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: background-color 0.3s;
+        }
+
+        .clear-chat-button:hover, .change-nickname-button:hover {
+            background-color: #555;
+        }
+
+        .clear-chat-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .status {
+            color: #666;
+            font-style: italic;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #222;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cc0000;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff0000;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .chat-container {
+                padding: 10px;
+            }
+
+            .messages {
+                max-height: calc(100vh - 180px);
+            }
+
+            .message .timestamp,
+            .message .text {
+                font-size: 14px;
+            }
+
+            .nickname-input,
+            .message-input,
+            .send-button,
+            .clear-chat-button,
+            .change-nickname-button {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .input-section {
+                flex-wrap: wrap;
+            }
+
+            .nickname-input {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .message-input {
+                flex-grow: 1;
+                width: calc(100% - 110px); /* Adjust for send button */
+            }
+
+            .send-button {
+                width: 100px;
+            }
+
+            .clear-chat-button {
+                position: static;
+                margin-top: 10px;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .messages {
+                max-height: calc(100vh - 160px);
+            }
+
+            .message .timestamp,
+            .message .text {
+                font-size: 12px;
+            }
+
+            .nickname-input,
+            .message-input,
+            .send-button,
+            .clear-chat-button,
+            .change-nickname-button {
+                padding: 6px;
+                font-size: 12px;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            .nickname-input,
+            .message-input,
+            .send-button,
+            .clear-chat-button,
+            .change-nickname-button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DOOM ROOM</h1>
+        <button class="clear-chat-button" id="clearChatButton">Clear Chat</button>
+    </div>
+    
+    <div class="chat-container">
+        <div class="messages" id="messages">
+            <div class="status">Welcome to IRC Chat! Enter your nickname and start chatting...</div>
+        </div>
+        
+        <div class="input-section">
+            <input type="text" 
+                   class="nickname-input" 
+                   id="nickname" 
+                   placeholder="Nickname" 
+                   maxlength="20">
+            <button class="change-nickname-button" id="changeNicknameButton">Change</button>
+            <input type="text" 
+                   class="message-input" 
+                   id="messageInput" 
+                   placeholder="Type your message..." 
+                   maxlength="500">
+            <button class="send-button" id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        class IRCChat {
+            constructor() {
+                this.messages = [];
+                this.messagesContainer = document.getElementById('messages');
+                this.nicknameInput = document.getElementById('nickname');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.clearChatButton = document.getElementById('clearChatButton');
+                this.changeNicknameButton = document.getElementById('changeNicknameButton');
+                
+                this.initializeEventListeners();
+                this.loadMessages();
+                this.loadNickname();
+            }
+
+            initializeEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+                this.nicknameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.messageInput.focus();
+                    }
+                });
+                this.clearChatButton.addEventListener('click', () => this.clearChat());
+                this.changeNicknameButton.addEventListener('click', () => this.changeNickname());
+            }
+
+            sendMessage() {
+                const nickname = this.nicknameInput.value.trim();
+                const messageText = this.messageInput.value.trim();
+
+                if (!nickname) {
+                    alert('Please enter a nickname');
+                    this.nicknameInput.focus();
+                    return;
+                }
+
+                if (!messageText) {
+                    alert('Please enter a message');
+                    this.messageInput.focus();
+                    return;
+                }
+
+                const message = {
+                    id: Date.now(),
+                    nickname: nickname,
+                    text: messageText,
+                    timestamp: new Date()
+                };
+
+                this.addMessage(message);
+                this.saveMessages();
+                this.saveNickname(nickname);
+                this.messageInput.value = '';
+                this.messageInput.focus();
+            }
+
+            addMessage(message) {
+                this.messages.push(message);
+                this.renderMessage(message);
+                this.scrollToBottom();
+            }
+
+            renderMessage(message) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+                const nicknameColor = this.generateColor(message.nickname);
+                messageElement.innerHTML = `
+                    <span class="timestamp">[${this.formatTime(message.timestamp)}]</span>
+                    <span class="nickname" style="color: ${nicknameColor}">&lt;${this.escapeHtml(message.nickname)}&gt;</span>
+                    <span class="text">${this.escapeHtml(message.text)}</span>
+                `;
+                this.messagesContainer.appendChild(messageElement);
+            }
+
+            formatTime(date) {
+                return date.toLocaleTimeString('en-US', { 
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            scrollToBottom() {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+
+            generateColor(nickname) {
+                let hash = 0;
+                for (let i = 0; i < nickname.length; i++) {
+                    hash = nickname.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const h = hash % 360;
+                return `hsl(${h}, 70%, 80%)`;
+            }
+
+            saveMessages() {
+                try {
+                    localStorage.setItem('ircMessages', JSON.stringify(this.messages));
+                } catch (e) {
+                    console.warn('Could not save messages to localStorage');
+                }
+            }
+
+            loadMessages() {
+                try {
+                    const savedMessages = localStorage.getItem('ircMessages');
+                    if (savedMessages) {
+                        this.messages = JSON.parse(savedMessages);
+                        this.messages.forEach(message => {
+                            message.timestamp = new Date(message.timestamp);
+                            this.renderMessage(message);
+                        });
+                        this.scrollToBottom();
+                    }
+                } catch (e) {
+                    console.warn('Could not load messages from localStorage');
+                }
+            }
+
+            saveNickname(nickname) {
+                try {
+                    localStorage.setItem('ircNickname', nickname);
+                } catch (e) {
+                    console.warn('Could not save nickname to localStorage');
+                }
+            }
+
+            loadNickname() {
+                try {
+                    const savedNickname = localStorage.getItem('ircNickname');
+                    if (savedNickname) {
+                        this.nicknameInput.value = savedNickname;
+                    }
+                } catch (e) {
+                    console.warn('Could not load nickname from localStorage');
+                }
+            }
+
+            clearChat() {
+                if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
+                    this.messages = [];
+                    this.messagesContainer.innerHTML = '<div class="status">Chat history cleared.</div>';
+                    try {
+                        localStorage.removeItem('ircMessages');
+                    } catch (e) {
+                        console.warn('Could not clear messages from localStorage');
+                    }
+                }
+            }
+
+            changeNickname() {
+                try {
+                    localStorage.removeItem('ircNickname');
+                    this.nicknameInput.value = '';
+                    this.nicknameInput.focus();
+                } catch (e) {
+                    console.warn('Could not remove nickname from localStorage');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new IRCChat();
+        });
+    </script>
+</body>
+</html>

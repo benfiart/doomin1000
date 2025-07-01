@@ -479,3 +479,272 @@ h1 {
         font-size: 12px;
     }
 }
+
+/* Chat Styles - Override main app layout for chat page */
+body:has(.chat-container) {
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body:has(.chat-container) .container {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    background-color: #111;
+    padding: 15px;
+    border-bottom: 2px solid var(--accent-color);
+    text-align: center;
+    position: relative;
+}
+
+.chat-header h1 {
+    color: var(--accent-color);
+    font-size: 24px;
+    text-shadow: 0 0 10px var(--accent-color);
+    margin: 0;
+}
+
+.chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+    height: calc(100vh - 200px);
+}
+
+.messages {
+    flex-grow: 1;
+    background-color: #111;
+    border: 1px solid #333;
+    border-radius: 5px;
+    padding: 15px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    max-height: calc(100vh - 200px);
+    text-align: left;
+}
+
+.message {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.message .nickname {
+    font-weight: bold;
+}
+
+.message .timestamp {
+    color: #666;
+    font-size: 12px;
+}
+
+.message .text {
+    color: #fff;
+    margin-left: 10px;
+}
+
+.input-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nickname-input {
+    background-color: #222;
+    border: 1px solid var(--accent-color);
+    border-radius: 3px;
+    color: #fff;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    width: 150px;
+}
+
+.nickname-input:focus {
+    outline: none;
+    border-color: #ff0000;
+    box-shadow: 0 0 5px var(--accent-color);
+}
+
+.message-input {
+    flex-grow: 1;
+    background-color: #222;
+    border: 1px solid #333;
+    border-radius: 3px;
+    color: #fff;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    min-width: 200px;
+}
+
+.message-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--accent-color);
+}
+
+.send-button {
+    background-color: var(--accent-color);
+    border: none;
+    border-radius: 3px;
+    color: #fff;
+    padding: 10px 20px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.send-button:hover {
+    background-color: #ff0000;
+}
+
+.send-button:active {
+    background-color: #990000;
+}
+
+.clear-chat-button, .change-nickname-button {
+    background-color: #444;
+    border: 1px solid #666;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: background-color 0.3s;
+}
+
+.clear-chat-button:hover, .change-nickname-button:hover {
+    background-color: #555;
+}
+
+.clear-chat-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.status {
+    color: #666;
+    font-style: italic;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+/* Chat scrollbar styling */
+.messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+    background: #222;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+    background: #ff0000;
+}
+
+/* Chat responsive styles */
+@media (max-width: 768px) {
+    .chat-header h1 {
+        font-size: 20px;
+    }
+
+    .chat-container {
+        padding: 10px 0;
+    }
+
+    .messages {
+        max-height: calc(100vh - 280px);
+        min-height: 300px;
+    }
+
+    .message .timestamp,
+    .message .text {
+        font-size: 14px;
+    }
+
+    .nickname-input,
+    .message-input,
+    .send-button,
+    .clear-chat-button,
+    .change-nickname-button {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .input-section {
+        flex-wrap: wrap;
+    }
+
+    .nickname-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .message-input {
+        flex-grow: 1;
+        width: calc(100% - 110px);
+    }
+
+    .send-button {
+        width: 100px;
+    }
+
+    .clear-chat-button {
+        position: static;
+        margin-top: 10px;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-header h1 {
+        font-size: 18px;
+    }
+
+    .messages {
+        max-height: calc(100vh - 260px);
+        min-height: 250px;
+    }
+
+    .message .timestamp,
+    .message .text {
+        font-size: 12px;
+    }
+
+    .nickname-input,
+    .message-input,
+    .send-button,
+    .clear-chat-button,
+    .change-nickname-button {
+        padding: 6px;
+        font-size: 12px;
+    }
+
+    .input-section {
+        flex-direction: column;
+    }
+
+    .nickname-input,
+    .message-input,
+    .send-button,
+    .clear-chat-button,
+    .change-nickname-button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}

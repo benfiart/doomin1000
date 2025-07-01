@@ -15,9 +15,33 @@
             </nav>
         </header>
         <main>
-            <h1>Chat</h1>
-            <p>Welcome to the chat. This is a placeholder.</p>
+            <div class="chat-header">
+                <h1>DOOM ROOM</h1>
+                <button class="clear-chat-button" id="clearChatButton">Clear Chat</button>
+            </div>
+            
+            <div class="chat-container">
+                <div class="messages" id="messages">
+                    <div class="status">Welcome to IRC Chat! Enter your nickname and start chatting...</div>
+                </div>
+                
+                <div class="input-section">
+                    <input type="text" 
+                           class="nickname-input" 
+                           id="nickname" 
+                           placeholder="Nickname" 
+                           maxlength="20">
+                    <button class="change-nickname-button" id="changeNicknameButton">Change</button>
+                    <input type="text" 
+                           class="message-input" 
+                           id="messageInput" 
+                           placeholder="Type your message..." 
+                           maxlength="500">
+                    <button class="send-button" id="sendButton">Send</button>
+                </div>
+            </div>
         </main>
     </div>
+    <script src="chat.js"></script>
 </body>
 </html>

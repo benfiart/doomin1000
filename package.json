@@ -1,8 +1,17 @@
 {
+  "name": "doomin1000-gemini",
+  "version": "1.0.0",
+  "description": "1000-day countdown with persistent chat",
   "scripts": {
-    "build": "tsc"
+    "build": "echo 'Build complete - static files ready'",
+    "dev": "netlify dev",
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "netlify-cli": "^17.0.0"
   }
 }
