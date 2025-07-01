@@ -336,37 +336,35 @@ class IRCChat {
                 config.supabaseAnonKey
             );
 
-            // Subscribe to broadcast events on messages channel
-            console.log('Setting up broadcast subscription channel...');
+            // Subscribe to postgres changes on messages table
+            console.log('Setting up postgres changes subscription...');
             this.subscription = this.supabaseClient
-                .channel('messages-channel', {
-                    config: {
-                        broadcast: { self: true }
+                .channel('messages-channel')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'messages'
+                }, (payload) => {
+                    console.log('Database change received:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        console.log('New message via postgres changes:', payload.new);
+                        this.handleNewMessage(payload.new);
+                    } else if (payload.eventType === 'DELETE') {
+                        console.log('Message deleted via postgres changes:', payload.old);
+                        this.handleMessagesCleared();
                     }
                 })
-                .on('broadcast', {
-                    event: 'INSERT'
-                }, (payload) => {
-                    console.log('New message received via broadcast:', payload);
-                    this.handleNewMessage(payload.payload);
-                })
-                .on('broadcast', {
-                    event: 'DELETE'
-                }, (payload) => {
-                    console.log('Messages cleared via broadcast:', payload);
-                    this.handleMessagesCleared();
-                })
                 .subscribe((status) => {
-                    console.log('Broadcast subscription status:', status);
+                    console.log('Postgres changes subscription status:', status);
                     if (status === 'SUBSCRIBED') {
-                        console.log('✅ Broadcast channel successfully subscribed');
+                        console.log('✅ Postgres changes successfully subscribed');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('❌ Broadcast channel error - falling back to polling');
+                        console.error('❌ Postgres changes error - falling back to polling');
                         this.startPolling();
                     }
                 });
 
-            console.log('Real-time broadcast subscription set up successfully');
+            console.log('Real-time postgres changes subscription set up successfully');
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
             // Fallback to polling if real-time fails
@@ -375,7 +373,7 @@ class IRCChat {
     }
 
     handleNewMessage(newMessage) {
-        console.log('Processing new broadcast message:', newMessage);
+        console.log('Processing new postgres changes message:', newMessage);
         
         // Add the new message to our local array
         const message = {
@@ -386,17 +384,17 @@ class IRCChat {
             timestamp: new Date(newMessage.created_at)
         };
         
-        console.log('Formatted broadcast message:', message);
+        console.log('Formatted postgres changes message:', message);
         
         // Check if we already have this message (avoid duplicates)
         const exists = this.messages.find(msg => msg.id === message.id);
         if (!exists) {
-            console.log('Adding new broadcast message to UI');
+            console.log('Adding new postgres changes message to UI');
             this.messages.push(message);
             this.renderMessage(message);
             this.scrollToBottom();
         } else {
-            console.log('Broadcast message already exists, skipping duplicate');
+            console.log('Postgres changes message already exists, skipping duplicate');
         }
     }
 
