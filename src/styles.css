@@ -481,14 +481,14 @@ h1 {
 }
 
 /* Chat Styles - Override main app layout for chat page */
-body:has(.chat-container) {
+body.chat-page {
     padding: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-body:has(.chat-container) .container {
+body.chat-page .container {
     width: 100%;
     max-width: none;
     padding: 0;
