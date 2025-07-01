@@ -34,15 +34,30 @@ exports.handler = async (event, context) => {
       process.env.SUPABASE_ANON_KEY
     );
 
+    // First, get all messages to see what we're working with
+    const { data: allMessages, error: fetchError } = await supabase
+      .from('messages')
+      .select('id');
+
+    if (fetchError) {
+      console.error('Fetch error:', fetchError);
+      throw fetchError;
+    }
+
+    console.log('Messages to delete:', allMessages?.length || 0);
+
     // Delete all messages from the database
     const { data, error } = await supabase
       .from('messages')
       .delete()
-      .gte('id', 1); // Delete all rows where id >= 1 (all messages)
+      .gte('id', 0); // Delete all rows where id >= 0 (all messages)
 
     if (error) {
+      console.error('Delete error:', error);
       throw error;
     }
+
+    console.log('Delete operation completed, affected rows:', data?.length || 0);
 
     return {
       statusCode: 200,
@@ -52,7 +67,8 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        message: 'All messages cleared from database'
+        message: `Cleared ${allMessages?.length || 0} messages from database`,
+        deletedCount: data?.length || 0
       })
     };
 
