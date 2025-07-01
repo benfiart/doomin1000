@@ -336,33 +336,35 @@ class IRCChat {
                 config.supabaseAnonKey
             );
 
-            // Subscribe to broadcast events via pg_notify
-            console.log('Setting up broadcast subscription via pg_notify...');
+            // Subscribe to broadcast events using realtime.broadcast_changes
+            console.log('Setting up realtime broadcast subscription...');
             this.subscription = this.supabaseClient
-                .channel('realtime:messages-channel')
+                .channel('messages-topic')
                 .on('broadcast', {
                     event: '*'
                 }, (payload) => {
-                    console.log('Broadcast event received:', payload);
-                    if (payload.event === 'INSERT') {
-                        console.log('New message via broadcast:', payload.payload);
-                        this.handleNewMessage(payload.payload);
-                    } else if (payload.event === 'DELETE') {
-                        console.log('Message deleted via broadcast:', payload.payload);
+                    console.log('Realtime broadcast event received:', payload);
+                    const { event, table, schema, new: newRecord, old: oldRecord } = payload.payload;
+                    
+                    if (event === 'INSERT' && newRecord) {
+                        console.log('New message via realtime broadcast:', newRecord);
+                        this.handleNewMessage(newRecord);
+                    } else if (event === 'DELETE') {
+                        console.log('Messages deleted via realtime broadcast');
                         this.handleMessagesCleared();
                     }
                 })
                 .subscribe((status) => {
-                    console.log('Broadcast subscription status:', status);
+                    console.log('Realtime broadcast subscription status:', status);
                     if (status === 'SUBSCRIBED') {
-                        console.log('✅ Broadcast successfully subscribed');
+                        console.log('✅ Realtime broadcast successfully subscribed');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('❌ Broadcast error - falling back to polling');
+                        console.error('❌ Realtime broadcast error - falling back to polling');
                         this.startPolling();
                     }
                 });
 
-            console.log('Real-time broadcast subscription set up successfully');
+            console.log('Realtime broadcast subscription setup completed');
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
             // Fallback to polling if real-time fails
