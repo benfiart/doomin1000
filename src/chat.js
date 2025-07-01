@@ -359,6 +359,7 @@ class IRCChat {
                 });
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
+            console.error('Error details:', error.message, error.stack);
             // Fallback to polling if real-time fails
             this.startPolling();
         }
