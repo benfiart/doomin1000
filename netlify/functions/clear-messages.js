@@ -38,7 +38,7 @@ exports.handler = async (event, context) => {
     const { error } = await supabase
       .from('messages')
       .delete()
-      .gte('id', 0); // This will delete all rows (id >= 0)
+      .neq('id', 0); // This will delete all rows where id != 0 (which is all rows since ids start from 1)
 
     if (error) {
       throw error;

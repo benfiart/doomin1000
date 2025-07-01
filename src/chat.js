@@ -74,8 +74,8 @@ class IRCChat {
         if (this.isOnline) {
             try {
                 await this.sendToServer(nickname, messageText, color);
-                // Save to localStorage as backup
-                this.saveMessages();
+                // Message successfully sent to server, refresh from database
+                setTimeout(() => this.loadMessagesFromServer(), 500); // Small delay to ensure server processed it
             } catch (error) {
                 console.warn('Failed to send message to server:', error);
                 // Keep in localStorage for later sync
@@ -267,6 +267,9 @@ class IRCChat {
                 } catch (e) {
                     console.warn('Could not clear messages from localStorage');
                 }
+
+                // Reload from server to confirm it's cleared
+                setTimeout(() => this.loadMessagesFromServer(), 1000);
 
             } catch (error) {
                 console.error('Failed to clear chat:', error);
