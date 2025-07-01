@@ -68,9 +68,10 @@ class IRCChat {
         // Try to send to server
         if (this.isOnline) {
             try {
-                await this.sendToServer(nickname, messageText, color);
-                // Message successfully sent, reload from server to show all messages
-                await this.loadMessagesFromServer();
+                console.log('Sending message to server:', { nickname, messageText, color });
+                const result = await this.sendToServer(nickname, messageText, color);
+                console.log('Message sent successfully:', result);
+                // Don't reload from server - rely on WebSocket for real-time updates
             } catch (error) {
                 console.error('Failed to send message to server:', error);
                 alert('Failed to send message. Please try again.');
@@ -309,26 +310,34 @@ class IRCChat {
 
     async setupRealtimeSubscription() {
         try {
+            console.log('Setting up real-time subscription...');
+            
             // Get Supabase config from server
+            console.log('Fetching config from server...');
             const configResponse = await fetch('/.netlify/functions/get-config');
             if (!configResponse.ok) {
-                throw new Error('Failed to get config');
+                throw new Error(`Config fetch failed: ${configResponse.status}`);
             }
             const config = await configResponse.json();
+            console.log('Config received:', { success: config.success, hasUrl: !!config.supabaseUrl, hasKey: !!config.supabaseAnonKey });
+            
             if (!config.success) {
                 throw new Error('Invalid config response');
             }
 
             // Import Supabase client directly in the browser
+            console.log('Importing Supabase client...');
             const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
             
             // Initialize Supabase client for real-time
+            console.log('Creating Supabase client...');
             this.supabaseClient = createClient(
                 config.supabaseUrl,
                 config.supabaseAnonKey
             );
 
             // Subscribe to real-time changes on messages table
+            console.log('Setting up subscription channel...');
             this.subscription = this.supabaseClient
                 .channel('messages-channel')
                 .on('postgres_changes', {
@@ -336,7 +345,7 @@ class IRCChat {
                     schema: 'public',
                     table: 'messages'
                 }, (payload) => {
-                    console.log('New message received:', payload);
+                    console.log('New message received via WebSocket:', payload);
                     this.handleNewMessage(payload.new);
                 })
                 .on('postgres_changes', {
@@ -344,10 +353,12 @@ class IRCChat {
                     schema: 'public', 
                     table: 'messages'
                 }, (payload) => {
-                    console.log('Messages cleared:', payload);
+                    console.log('Messages cleared via WebSocket:', payload);
                     this.handleMessagesCleared();
                 })
-                .subscribe();
+                .subscribe((status) => {
+                    console.log('Subscription status:', status);
+                });
 
             console.log('Real-time subscription set up successfully');
         } catch (error) {
@@ -358,18 +369,28 @@ class IRCChat {
     }
 
     handleNewMessage(newMessage) {
+        console.log('Processing new message:', newMessage);
+        
         // Add the new message to our local array
         const message = {
-            ...newMessage,
+            id: newMessage.id,
+            nickname: newMessage.nickname,
+            text: newMessage.text,
+            color: newMessage.color,
             timestamp: new Date(newMessage.created_at)
         };
+        
+        console.log('Formatted message:', message);
         
         // Check if we already have this message (avoid duplicates)
         const exists = this.messages.find(msg => msg.id === message.id);
         if (!exists) {
+            console.log('Adding new message to UI');
             this.messages.push(message);
             this.renderMessage(message);
             this.scrollToBottom();
+        } else {
+            console.log('Message already exists, skipping duplicate');
         }
     }
 
