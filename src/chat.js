@@ -1,3 +1,108 @@
+// ================================
+// CHAT THEME SYSTEM
+// ================================
+const FALLBACK_THEMES = [
+    "How do you find meaning when everything feels uncertain?",
+    "What does genuine human connection look like in a digital world?",
+    "How do we build community when traditional structures are changing?",
+    "What wisdom can we share to help each other through transition?",
+    "How do we balance hope and realism when facing the unknown?",
+    "What role does technology play in bringing us together or apart?",
+    "How do we create positive change when time feels limited?"
+];
+
+async function generateWithGemini(prompt) {
+    const response = await fetch('/.netlify/functions/generate-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+    });
+    
+    if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    if (data.error) {
+        throw new Error(data.error);
+    }
+    
+    if (!data.text) {
+        throw new Error('No content generated from AI');
+    }
+    
+    return data.text;
+}
+
+async function generateChatTheme(dayNumber) {
+    const themes = [
+        'communication and meaningful connection',
+        'shared experiences in uncertain times',
+        'collective wisdom and learning from each other',
+        'technology\'s impact on human relationships',
+        'building community and mutual support',
+        'finding purpose and meaning in times of change',
+        'collaborative problem solving and hope'
+    ];
+    
+    const selectedTheme = themes[dayNumber % themes.length];
+    const prompt = `Generate a thought-provoking discussion question about ${selectedTheme} for day ${dayNumber} of a 1000-day countdown. Make it conversational and engaging, designed to spark meaningful chat discussion. 15-30 words. Return only the question.`;
+    
+    try {
+        return await generateWithGemini(prompt);
+    } catch (error) {
+        console.warn('Failed to generate chat theme:', error);
+        return FALLBACK_THEMES[dayNumber % FALLBACK_THEMES.length];
+    }
+}
+
+function getChatThemeStorageKey(day) {
+    return `doomsday-chat-theme-${day}`;
+}
+
+function saveChatThemeToStorage(data) {
+    localStorage.setItem(getChatThemeStorageKey(data.day), JSON.stringify(data));
+}
+
+function getChatThemeFromStorage(day) {
+    try {
+        const stored = localStorage.getItem(getChatThemeStorageKey(day));
+        if (!stored) return null;
+        
+        const data = JSON.parse(stored);
+        return data.date === new Date().toDateString() ? data : null;
+    } catch (error) {
+        console.warn('Failed to load chat theme from storage:', error);
+        return null;
+    }
+}
+
+async function getDailyChatTheme(dayNumber) {
+    const cached = getChatThemeFromStorage(dayNumber);
+    if (cached) return cached;
+    
+    try {
+        const generated = await generateChatTheme(dayNumber);
+        const theme = {
+            text: generated,
+            day: dayNumber,
+            date: new Date().toDateString()
+        };
+        saveChatThemeToStorage(theme);
+        return theme;
+    } catch (error) {
+        console.warn('Failed to get daily chat theme:', error);
+        return {
+            text: FALLBACK_THEMES[dayNumber % FALLBACK_THEMES.length],
+            day: dayNumber,
+            date: new Date().toDateString()
+        };
+    }
+}
+
+// ================================
+// CHAT CLASS
+// ================================
 class IRCChat {
     constructor() {
         this.messages = [];
@@ -7,12 +112,15 @@ class IRCChat {
         this.sendButton = document.getElementById('sendButton');
         this.clearChatButton = document.getElementById('clearChatButton');
         this.changeNicknameButton = document.getElementById('changeNicknameButton');
+        this.themeTextElement = document.getElementById('chat-theme-text');
+        this.themeDayElement = document.getElementById('chat-theme-day');
         this.isOnline = navigator.onLine;
         this.supabaseClient = null;
         
         this.initializeEventListeners();
         this.loadMessagesFromServer();
         this.loadNickname();
+        this.loadDailyTheme();
         
         // Set up real-time postgres changes subscriptions
         this.setupRealtimeSubscription();
@@ -425,6 +533,40 @@ class IRCChat {
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
         }
+    }
+
+    // ================================
+    // THEME MANAGEMENT
+    // ================================
+    getCurrentDayNumber() {
+        // Calculate day number from start date (same logic as main page)
+        const startDate = new Date('2025-06-11');
+        const now = new Date();
+        const timeDiff = now.getTime() - startDate.getTime();
+        const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+        return Math.max(1, daysDiff + 1); // Ensure day starts at 1
+    }
+
+    async loadDailyTheme() {
+        const dayNumber = this.getCurrentDayNumber();
+        this.themeDayElement.textContent = `Day ${dayNumber}`;
+        
+        try {
+            const theme = await getDailyChatTheme(dayNumber);
+            this.updateThemeDisplay(theme);
+        } catch (error) {
+            console.warn('Failed to load daily theme:', error);
+            this.updateThemeDisplay({
+                text: FALLBACK_THEMES[dayNumber % FALLBACK_THEMES.length],
+                day: dayNumber,
+                date: new Date().toDateString()
+            });
+        }
+    }
+
+    updateThemeDisplay(theme) {
+        this.themeDayElement.textContent = `Day ${theme.day}`;
+        this.themeTextElement.textContent = theme.text;
     }
 }
 

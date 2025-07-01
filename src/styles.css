@@ -512,6 +512,54 @@ body.chat-page .container {
     margin: 0;
 }
 
+/* Chat Theme Styling */
+.chat-theme {
+    background-color: #0d0d0d;
+    border: 1px solid #333;
+    margin: 15px 20px;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 3px solid var(--accent-color);
+}
+
+.theme-label {
+    color: #999;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+.theme-text {
+    color: var(--text-color);
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-style: italic;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.theme-day {
+    color: var(--accent-color);
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    .chat-theme {
+        margin: 10px 15px;
+        padding: 15px;
+    }
+    
+    .theme-text {
+        font-size: 14px;
+    }
+}
+
 .chat-container {
     flex-grow: 1;
     display: flex;
