@@ -14,7 +14,7 @@ class IRCChat {
         this.loadMessagesFromServer();
         this.loadNickname();
         
-        // Set up real-time broadcast subscriptions
+        // Set up real-time postgres changes subscriptions
         this.setupRealtimeSubscription();
         
         // Check connection status
@@ -310,34 +310,27 @@ class IRCChat {
 
     async setupRealtimeSubscription() {
         try {
-            console.log('Setting up real-time subscription...');
+            console.log('🔄 Setting up real-time subscription...');
             
             // Get Supabase config from server
-            console.log('Fetching config from server...');
             const configResponse = await fetch('/.netlify/functions/get-config');
             if (!configResponse.ok) {
                 throw new Error(`Config fetch failed: ${configResponse.status}`);
             }
             const config = await configResponse.json();
-            console.log('Config received:', { success: config.success, hasUrl: !!config.supabaseUrl, hasKey: !!config.supabaseAnonKey });
             
             if (!config.success) {
                 throw new Error('Invalid config response');
             }
 
             // Import Supabase client directly in the browser
-            console.log('Importing Supabase client...');
             const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-            
-            // Initialize Supabase client for real-time
-            console.log('Creating Supabase client...');
             this.supabaseClient = createClient(
                 config.supabaseUrl,
                 config.supabaseAnonKey
             );
 
             // Subscribe to postgres changes (simple method from Supabase docs)
-            console.log('Setting up postgres changes subscription...');
             this.subscription = this.supabaseClient
                 .channel('schema-db-changes')
                 .on('postgres_changes', {
@@ -345,26 +338,21 @@ class IRCChat {
                     schema: 'public',
                     table: 'messages'
                 }, (payload) => {
-                    console.log('Postgres changes received:', payload);
                     if (payload.eventType === 'INSERT') {
-                        console.log('New message via postgres changes:', payload.new);
                         this.handleNewMessage(payload.new);
                     } else if (payload.eventType === 'DELETE') {
-                        console.log('Messages deleted via postgres changes');
+                        console.log('🗑️ Messages cleared via postgres changes');
                         this.handleMessagesCleared();
                     }
                 })
                 .subscribe((status) => {
-                    console.log('Postgres changes subscription status:', status);
                     if (status === 'SUBSCRIBED') {
-                        console.log('✅ Postgres changes successfully subscribed');
+                        console.log('✅ Real-time postgres changes subscribed successfully');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('❌ Postgres changes error - falling back to polling');
+                        console.error('❌ Real-time error - falling back to polling');
                         this.startPolling();
                     }
                 });
-
-            console.log('Postgres changes subscription setup completed');
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
             // Fallback to polling if real-time fails
@@ -373,8 +361,6 @@ class IRCChat {
     }
 
     handleNewMessage(newMessage) {
-        console.log('Processing new broadcast message:', newMessage);
-        
         // Add the new message to our local array
         const message = {
             id: newMessage.id,
@@ -384,17 +370,13 @@ class IRCChat {
             timestamp: new Date(newMessage.created_at)
         };
         
-        console.log('Formatted broadcast message:', message);
-        
         // Check if we already have this message (avoid duplicates)
         const exists = this.messages.find(msg => msg.id === message.id);
         if (!exists) {
-            console.log('Adding new broadcast message to UI');
+            console.log('📨 New message received via postgres changes:', message.nickname, '-', message.text);
             this.messages.push(message);
             this.renderMessage(message);
             this.scrollToBottom();
-        } else {
-            console.log('Broadcast message already exists, skipping duplicate');
         }
     }
 
