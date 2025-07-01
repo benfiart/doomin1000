@@ -258,8 +258,9 @@ class IRCChat {
                     console.warn('Could not clear messages from localStorage');
                 }
 
-                console.log('🗑️ Chat cleared successfully - waiting for real-time update');
-                // No need to reload - postgres_changes will handle the UI update automatically
+                console.log('🗑️ Chat cleared successfully');
+                // Clear the UI immediately since bulk DELETE might not trigger postgres_changes
+                this.handleMessagesCleared();
 
             } catch (error) {
                 console.error('Failed to clear chat:', error);
