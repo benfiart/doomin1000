@@ -44,6 +44,27 @@ header {
     padding-top: 10px; /* Extra padding for iPhone notch area */
 }
 
+nav {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+nav a {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px solid var(--accent-color);
+    border-radius: 5px;
+    margin: 0 10px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+nav a.active, nav a:hover {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+}
+
 h1 {
     font-size: 3rem;
     font-weight: 700;
