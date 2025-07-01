@@ -234,14 +234,51 @@ class IRCChat {
         }
     }
 
-    clearChat() {
-        if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
-            this.messages = [];
-            this.messagesContainer.innerHTML = '<div class="status">Chat history cleared.</div>';
+    async clearChat() {
+        if (confirm('Are you sure you want to clear ALL chat history for EVERYONE? This action cannot be undone and will delete all messages from the database.')) {
             try {
-                localStorage.removeItem('ircMessages');
-            } catch (e) {
-                console.warn('Could not clear messages from localStorage');
+                // Show loading state
+                this.messagesContainer.innerHTML = '<div class="status">Clearing chat history...</div>';
+                
+                // Call API to clear database
+                const response = await fetch('/.netlify/functions/clear-messages', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to clear messages');
+                }
+
+                // Clear local data
+                this.messages = [];
+                this.messagesContainer.innerHTML = '<div class="status">Chat history cleared for everyone.</div>';
+                
+                // Clear localStorage
+                try {
+                    localStorage.removeItem('ircMessages');
+                } catch (e) {
+                    console.warn('Could not clear messages from localStorage');
+                }
+
+            } catch (error) {
+                console.error('Failed to clear chat:', error);
+                this.messagesContainer.innerHTML = '<div class="status" style="color: #ff6666;">Failed to clear chat history. Please try again.</div>';
+                
+                // Fallback: just clear local storage
+                try {
+                    localStorage.removeItem('ircMessages');
+                    this.messages = [];
+                } catch (e) {
+                    console.warn('Could not clear messages from localStorage');
+                }
             }
         }
     }
