@@ -258,8 +258,8 @@ class IRCChat {
                     console.warn('Could not clear messages from localStorage');
                 }
 
-                // Reload from server to show cleared state
-                await this.loadMessagesFromServer();
+                console.log('🗑️ Chat cleared successfully - waiting for real-time update');
+                // No need to reload - postgres_changes will handle the UI update automatically
 
             } catch (error) {
                 console.error('Failed to clear chat:', error);
@@ -382,8 +382,9 @@ class IRCChat {
 
     handleMessagesCleared() {
         // All messages were deleted, clear the UI
+        console.log('🗑️ All messages cleared via postgres changes');
         this.messages = [];
-        this.messagesContainer.innerHTML = '<div class="status">Chat history cleared.</div>';
+        this.messagesContainer.innerHTML = '<div class="status">Chat history cleared for everyone! 🗑️</div>';
     }
 
     startPolling() {
