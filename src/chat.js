@@ -309,13 +309,23 @@ class IRCChat {
 
     async setupRealtimeSubscription() {
         try {
+            // Get Supabase config from server
+            const configResponse = await fetch('/.netlify/functions/get-config');
+            if (!configResponse.ok) {
+                throw new Error('Failed to get config');
+            }
+            const config = await configResponse.json();
+            if (!config.success) {
+                throw new Error('Invalid config response');
+            }
+
             // Import Supabase client directly in the browser
             const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
             
             // Initialize Supabase client for real-time
             this.supabaseClient = createClient(
-                'https://fonzafdyoxvbqatkqtsi.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbnphZmR5b3h2YnFhdGtxdHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MDI3MjcsImV4cCI6MjA2Njk3ODcyN30.CymhfkaBo23FuTDaKsjb3WNLhKq28kLBJLOQGdNRwOc'
+                config.supabaseUrl,
+                config.supabaseAnonKey
             );
 
             // Subscribe to real-time changes on messages table
