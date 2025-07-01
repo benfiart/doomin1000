@@ -1,5 +1,5 @@
-# Clean URL redirects
-/chat   /chat.html   200
+# Clean URL redirects - force refresh
+/chat   /chat.html   200!
 /       /index.html  200
 
 # Fallback for SPA routing
