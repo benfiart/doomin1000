@@ -336,35 +336,35 @@ class IRCChat {
                 config.supabaseAnonKey
             );
 
-            // Subscribe to broadcast events using realtime.broadcast_changes
-            console.log('Setting up realtime broadcast subscription...');
+            // Subscribe to postgres changes (simple method from Supabase docs)
+            console.log('Setting up postgres changes subscription...');
             this.subscription = this.supabaseClient
-                .channel('messages-topic')
-                .on('broadcast', {
-                    event: '*'
+                .channel('schema-db-changes')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'messages'
                 }, (payload) => {
-                    console.log('Realtime broadcast event received:', payload);
-                    const { event, table, schema, new: newRecord, old: oldRecord } = payload.payload;
-                    
-                    if (event === 'INSERT' && newRecord) {
-                        console.log('New message via realtime broadcast:', newRecord);
-                        this.handleNewMessage(newRecord);
-                    } else if (event === 'DELETE') {
-                        console.log('Messages deleted via realtime broadcast');
+                    console.log('Postgres changes received:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        console.log('New message via postgres changes:', payload.new);
+                        this.handleNewMessage(payload.new);
+                    } else if (payload.eventType === 'DELETE') {
+                        console.log('Messages deleted via postgres changes');
                         this.handleMessagesCleared();
                     }
                 })
                 .subscribe((status) => {
-                    console.log('Realtime broadcast subscription status:', status);
+                    console.log('Postgres changes subscription status:', status);
                     if (status === 'SUBSCRIBED') {
-                        console.log('✅ Realtime broadcast successfully subscribed');
+                        console.log('✅ Postgres changes successfully subscribed');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('❌ Realtime broadcast error - falling back to polling');
+                        console.error('❌ Postgres changes error - falling back to polling');
                         this.startPolling();
                     }
                 });
 
-            console.log('Realtime broadcast subscription setup completed');
+            console.log('Postgres changes subscription setup completed');
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
             // Fallback to polling if real-time fails
