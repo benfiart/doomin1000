@@ -339,7 +339,11 @@ class IRCChat {
             // Subscribe to broadcast events on messages channel
             console.log('Setting up broadcast subscription channel...');
             this.subscription = this.supabaseClient
-                .channel('messages-channel')
+                .channel('messages-channel', {
+                    config: {
+                        broadcast: { self: true }
+                    }
+                })
                 .on('broadcast', {
                     event: 'INSERT'
                 }, (payload) => {
@@ -354,6 +358,12 @@ class IRCChat {
                 })
                 .subscribe((status) => {
                     console.log('Broadcast subscription status:', status);
+                    if (status === 'SUBSCRIBED') {
+                        console.log('✅ Broadcast channel successfully subscribed');
+                    } else if (status === 'CHANNEL_ERROR') {
+                        console.error('❌ Broadcast channel error - falling back to polling');
+                        this.startPolling();
+                    }
                 });
 
             console.log('Real-time broadcast subscription set up successfully');
