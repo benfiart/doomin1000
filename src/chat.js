@@ -56,16 +56,7 @@ class IRCChat {
         }
 
         const color = this.generateColor(nickname);
-        const message = {
-            id: Date.now(),
-            nickname: nickname,
-            text: messageText,
-            color: color,
-            timestamp: new Date()
-        };
-
-        // Always add to local UI first for immediate feedback
-        this.addMessage(message);
+        
         this.saveNickname(nickname);
         this.messageInput.value = '';
         this.messageInput.focus();
@@ -74,16 +65,14 @@ class IRCChat {
         if (this.isOnline) {
             try {
                 await this.sendToServer(nickname, messageText, color);
-                // Message successfully sent to server, refresh from database
-                setTimeout(() => this.loadMessagesFromServer(), 500); // Small delay to ensure server processed it
+                // Message successfully sent, reload from server to show all messages
+                await this.loadMessagesFromServer();
             } catch (error) {
-                console.warn('Failed to send message to server:', error);
-                // Keep in localStorage for later sync
-                this.saveMessages();
+                console.error('Failed to send message to server:', error);
+                alert('Failed to send message. Please try again.');
             }
         } else {
-            // Save to localStorage for later sync
-            this.saveMessages();
+            alert('You are offline. Please check your internet connection.');
         }
     }
 
@@ -257,10 +246,6 @@ class IRCChat {
                     throw new Error(data.error || 'Failed to clear messages');
                 }
 
-                // Clear local data
-                this.messages = [];
-                this.messagesContainer.innerHTML = '<div class="status">Chat history cleared for everyone.</div>';
-                
                 // Clear localStorage
                 try {
                     localStorage.removeItem('ircMessages');
@@ -268,20 +253,12 @@ class IRCChat {
                     console.warn('Could not clear messages from localStorage');
                 }
 
-                // Reload from server to confirm it's cleared
-                setTimeout(() => this.loadMessagesFromServer(), 1000);
+                // Reload from server to show cleared state
+                await this.loadMessagesFromServer();
 
             } catch (error) {
                 console.error('Failed to clear chat:', error);
-                this.messagesContainer.innerHTML = '<div class="status" style="color: #ff6666;">Failed to clear chat history. Please try again.</div>';
-                
-                // Fallback: just clear local storage
-                try {
-                    localStorage.removeItem('ircMessages');
-                    this.messages = [];
-                } catch (e) {
-                    console.warn('Could not clear messages from localStorage');
-                }
+                this.messagesContainer.innerHTML = '<div class="status" style="color: #ff6666;">Failed to clear chat history. Error: ' + error.message + '</div>';
             }
         }
     }

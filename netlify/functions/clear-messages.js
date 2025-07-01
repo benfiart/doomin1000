@@ -35,10 +35,10 @@ exports.handler = async (event, context) => {
     );
 
     // Delete all messages from the database
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('messages')
       .delete()
-      .neq('id', 0); // This will delete all rows where id != 0 (which is all rows since ids start from 1)
+      .gte('id', 1); // Delete all rows where id >= 1 (all messages)
 
     if (error) {
       throw error;
