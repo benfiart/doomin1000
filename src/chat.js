@@ -343,7 +343,10 @@ class IRCChat {
                         this.handleNewMessage(payload.new);
                     } else if (payload.eventType === 'DELETE') {
                         console.log('🗑️ Messages cleared via postgres changes');
-                        this.handleMessagesCleared();
+                        // Only handle if we have messages to clear (prevent loop)
+                        if (this.messages.length > 0) {
+                            this.handleMessagesCleared();
+                        }
                     }
                 })
                 .subscribe((status) => {
