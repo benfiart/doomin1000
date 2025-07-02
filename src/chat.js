@@ -539,12 +539,42 @@ class IRCChat {
     // THEME MANAGEMENT
     // ================================
     getCurrentDayNumber() {
-        // Calculate day number from start date (same logic as main page)
-        const startDate = new Date('2025-06-11');
+        // Use same logic as main page app.js
+        const CONFIG = {
+            startDate: new Date('2025-06-11'),
+            timezoneOffset: -(new Date().getTimezoneOffset() / 60)
+        };
+        const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+        
+        function toConfiguredTimezone(date) {
+            const newDate = new Date(date);
+            const year = newDate.getUTCFullYear();
+            const month = newDate.getUTCMonth();
+            const day = newDate.getUTCDate();
+            const hours = newDate.getUTCHours();
+            const minutes = newDate.getUTCMinutes();
+            const seconds = newDate.getUTCSeconds();
+            const milliseconds = newDate.getUTCMilliseconds();
+            const utcDate = new Date(Date.UTC(year, month, day, hours, minutes, seconds, milliseconds));
+            utcDate.setUTCHours(utcDate.getUTCHours() + CONFIG.timezoneOffset);
+            return utcDate;
+        }
+        
+        function getMidnightInTimezone(date) {
+            const timezoneDate = toConfiguredTimezone(date);
+            const year = timezoneDate.getUTCFullYear();
+            const month = timezoneDate.getUTCMonth();
+            const day = timezoneDate.getUTCDate();
+            return new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+        }
+        
         const now = new Date();
-        const timeDiff = now.getTime() - startDate.getTime();
-        const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-        return Math.max(1, daysDiff + 1); // Ensure day starts at 1
+        const startMidnight = getMidnightInTimezone(CONFIG.startDate);
+        const nowMidnight = getMidnightInTimezone(now);
+        const daysDifference = Math.floor((nowMidnight.getTime() - startMidnight.getTime()) / MILLISECONDS_PER_DAY);
+        const daysPassed = daysDifference >= 0 ? daysDifference + 1 : 0;
+        
+        return Math.max(1, daysPassed);
     }
 
     async loadDailyTheme() {

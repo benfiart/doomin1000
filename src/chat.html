@@ -13,16 +13,16 @@
 <body class="chat-page">
     <div class="container">
         <header>
-            <nav>
-                <a href="/">Clock</a>
-                <a href="/chat" class="active">Chat</a>
-            </nav>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 30px;">
+                <h1 style="color: var(--accent-color); font-size: 24px; text-shadow: 0 0 10px var(--accent-color); margin: 0;">DOOM ROOM</h1>
+                <nav style="display: flex; align-items: center; margin: 0 !important;">
+                    <a href="/">Clock</a>
+                    <a href="/chat" class="active">Chat</a>
+                </nav>
+                <button class="clear-chat-button" id="clearChatButton" style="position: static;">Clear Chat</button>
+            </div>
         </header>
         <main>
-            <div class="chat-header">
-                <h1>DOOM ROOM</h1>
-                <button class="clear-chat-button" id="clearChatButton">Clear Chat</button>
-            </div>
             
             <div class="chat-theme">
                 <div class="theme-label">Today's Discussion Theme</div>
