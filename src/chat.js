@@ -310,7 +310,7 @@ class IRCChat {
     }
 
     renderAllMessages() {
-        this.messagesContainer.innerHTML = '<div class="status">Welcome to IRC Chat! Enter your nickname and start chatting...</div>';
+        this.messagesContainer.innerHTML = '<div class="status">Welcome to DOOM ROOM! Enter your nickname and start chatting...</div>';
         this.messages.forEach(message => {
             this.renderMessage(message);
         });
