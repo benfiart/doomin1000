@@ -727,6 +727,10 @@ body.chat-page .container {
 
 /* Chat responsive styles */
 @media (max-width: 768px) {
+    body.chat-page {
+        background-image: url('img/chat_room_mobile.webp');
+    }
+    
     body.chat-page header div {
         margin: 0 15px !important;
     }
