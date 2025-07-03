@@ -6,15 +6,14 @@ exports.handler = async (event, context) => {
         console.log('📖 Fetching latest chat theme...');
 
         // Validate environment variables
-        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-        if (!process.env.SUPABASE_URL || !supabaseKey) {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
             throw new Error('Missing Supabase environment variables');
         }
 
         // Initialize Supabase client
         const supabase = createClient(
             process.env.SUPABASE_URL,
-            supabaseKey
+            process.env.SUPABASE_SERVICE_KEY
         );
 
         // Get the most recent theme from daily_content table
