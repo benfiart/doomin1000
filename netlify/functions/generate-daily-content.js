@@ -4,7 +4,7 @@
 // ================================
 
 // Import Supabase client
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 // Configuration matching main app
 const CONFIG = {
@@ -146,7 +146,7 @@ async function generateChatTheme(dayNumber) {
 // MAIN HANDLER
 // ================================
 
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
     try {
         console.log('🌅 Starting daily content generation...');
         

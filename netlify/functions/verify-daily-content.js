@@ -3,7 +3,7 @@
 // Check database status and manually trigger generation if needed
 // ================================
 
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 // Same day calculation logic as generation function
 const CONFIG = {
@@ -24,7 +24,7 @@ function getCurrentDayNumber() {
     return Math.max(1, Math.min(daysPassed, CONFIG.totalDays));
 }
 
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
     try {
         console.log('🔍 Verifying daily content system...');
         
