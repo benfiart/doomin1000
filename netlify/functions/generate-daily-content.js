@@ -70,31 +70,52 @@ function getCurrentDayNumber() {
     return Math.max(1, Math.min(daysPassed, CONFIG.totalDays));
 }
 
-async function generateWithGemini(prompt) {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { 
-                temperature: 0.7, 
-                maxOutputTokens: 100 
+async function generateWithGemini(prompt, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { 
+                        temperature: 0.7, 
+                        maxOutputTokens: 100 
+                    }
+                })
+            });
+
+            if (response.status === 429) {
+                // Rate limited - wait and retry
+                console.log(`⏳ Rate limited, waiting before retry ${attempt}/${retries}...`);
+                await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
+                continue;
             }
-        })
-    });
 
-    if (!response.ok) {
-        throw new Error(`Gemini API failed: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Gemini API failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (!text) {
+                throw new Error('No content generated from AI');
+            }
+
+            return text.trim();
+            
+        } catch (error) {
+            console.log(`❌ Attempt ${attempt}/${retries} failed:`, error.message);
+            
+            if (attempt === retries) {
+                throw error;
+            }
+            
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+        }
     }
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!text) {
-        throw new Error('No content generated from AI');
-    }
-
-    return text.trim();
 }
 
 async function generateMainQuote(dayNumber) {
@@ -173,12 +194,14 @@ export const handler = async (event, context) => {
             };
         }
 
-        // Generate fresh content
+        // Generate fresh content (sequential to avoid rate limits)
         console.log('🤖 Generating fresh content with AI...');
-        const [mainQuote, chatTheme] = await Promise.all([
-            generateMainQuote(dayNumber),
-            generateChatTheme(dayNumber)
-        ]);
+        const mainQuote = await generateMainQuote(dayNumber);
+        
+        // Add delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const chatTheme = await generateChatTheme(dayNumber);
 
         // Store in database
         const { data, error } = await supabase
