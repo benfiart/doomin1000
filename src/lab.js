@@ -19,6 +19,15 @@ class AILab {
         this.presetBtns = document.querySelectorAll('.preset-btn');
         this.insertBtns = document.querySelectorAll('.insert-btn');
         this.copyPromptBtn = document.getElementById('copy-prompt-btn');
+        
+        // API metadata elements
+        this.apiMetadata = document.getElementById('api-metadata');
+        this.promptTokens = document.getElementById('prompt-tokens');
+        this.responseTokens = document.getElementById('response-tokens');
+        this.totalTokens = document.getElementById('total-tokens');
+        this.tokenEfficiency = document.getElementById('token-efficiency');
+        this.responseTime = document.getElementById('response-time');
+        this.modelUsed = document.getElementById('model-used');
 
         // Preset prompts
         this.presets = {
@@ -181,8 +190,10 @@ class AILab {
 
             if (data.success) {
                 this.outputTextarea.value = data.text;
-                this.generationStatus.textContent = `Generated successfully with ${data.metadata.model}`;
                 this.updateCharacterCount();
+                
+                // Update metadata display
+                this.updateMetadataDisplay(data.metadata);
                 
                 console.log('✅ Generation successful:', data.metadata);
             } else {
@@ -221,9 +232,39 @@ class AILab {
         }
     }
 
+    updateMetadataDisplay(metadata) {
+        if (metadata.usage) {
+            // Show the metadata section
+            this.apiMetadata.style.display = 'block';
+            
+            // Update token information
+            this.promptTokens.textContent = metadata.usage.promptTokens || 0;
+            this.responseTokens.textContent = metadata.usage.candidatesTokens || 0;
+            this.totalTokens.textContent = metadata.usage.totalTokens || 0;
+            
+            // Calculate token efficiency (used vs max allowed)
+            const efficiency = metadata.maxTokens > 0 ? 
+                Math.round((metadata.usage.candidatesTokens / metadata.maxTokens) * 100) : 0;
+            this.tokenEfficiency.textContent = `${efficiency}% of max`;
+            
+            // Update timing and model info
+            this.responseTime.textContent = metadata.duration ? `${metadata.duration}ms` : '-';
+            this.modelUsed.textContent = metadata.model || '-';
+            
+            // Update generation status with comprehensive info
+            this.generationStatus.textContent = 
+                `Generated ${metadata.usage.totalTokens} tokens in ${metadata.duration}ms with ${metadata.model}`;
+        } else {
+            // Hide metadata section if no usage data
+            this.apiMetadata.style.display = 'none';
+            this.generationStatus.textContent = `Generated successfully with ${metadata.model}`;
+        }
+    }
+
     clearOutput() {
         this.outputTextarea.value = '';
         this.generationStatus.textContent = 'Ready to generate';
+        this.apiMetadata.style.display = 'none';
         this.updateCharacterCount();
         console.log('🗑️ Output cleared');
     }

@@ -97,6 +97,35 @@
                         <button id="copy-btn" class="copy-button">Copy Output</button>
                         <button id="use-as-prompt-btn" class="use-prompt-button">Use as New Prompt</button>
                     </div>
+                    <div id="api-metadata" class="api-metadata" style="display: none;">
+                        <h3>API Response Details</h3>
+                        <div class="metadata-grid">
+                            <div class="metadata-item">
+                                <span class="metadata-label">Prompt Tokens:</span>
+                                <span id="prompt-tokens">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Response Tokens:</span>
+                                <span id="response-tokens">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Total Tokens:</span>
+                                <span id="total-tokens">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Token Efficiency:</span>
+                                <span id="token-efficiency">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Response Time:</span>
+                                <span id="response-time">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Model Used:</span>
+                                <span id="model-used">-</span>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </div>
         </main>

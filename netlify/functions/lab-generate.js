@@ -81,8 +81,23 @@ async function generateWithGemini(prompt, model = 'gemini-1.5-flash-latest', tem
             throw new Error('No content generated from AI');
         }
 
+        // Extract usage metadata from API response
+        const usageMetadata = data.usageMetadata || {};
+        const promptTokens = usageMetadata.promptTokenCount || 0;
+        const candidatesTokens = usageMetadata.candidatesTokenCount || 0;
+        const totalTokens = usageMetadata.totalTokenCount || (promptTokens + candidatesTokens);
+
         console.log(`✅ Generated ${text.length} characters successfully`);
-        return text.trim();
+        console.log(`📊 Token usage: ${promptTokens} prompt + ${candidatesTokens} response = ${totalTokens} total`);
+        
+        return {
+            text: text.trim(),
+            usage: {
+                promptTokens,
+                candidatesTokens,
+                totalTokens
+            }
+        };
         
     } catch (error) {
         clearTimeout(timeoutId);
@@ -180,7 +195,7 @@ exports.handler = async (event, context) => {
 
         // Generate with Gemini - no fallbacks, let errors bubble up
         const startTime = Date.now();
-        const generatedText = await generateWithGemini(prompt, model, tempNum, tokensNum);
+        const result = await generateWithGemini(prompt, model, tempNum, tokensNum);
         const duration = Date.now() - startTime;
         
         console.log(`⏱️ Generation completed in ${duration}ms`);
@@ -195,13 +210,15 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({
                 success: true,
-                text: generatedText,
+                text: result.text,
                 metadata: {
                     model: model,
                     temperature: tempNum,
                     maxTokens: tokensNum,
                     promptLength: prompt.length,
-                    responseLength: generatedText.length
+                    responseLength: result.text.length,
+                    duration: duration,
+                    usage: result.usage
                 }
             })
         };

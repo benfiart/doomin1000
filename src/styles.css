@@ -1321,6 +1321,54 @@ body.chat-page .footer {
     color: #fff;
 }
 
+/* API metadata display */
+.api-metadata {
+    margin-top: 20px;
+    padding: 15px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 6px;
+}
+
+.api-metadata h3 {
+    margin: 0 0 12px 0;
+    color: var(--accent-color);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.metadata-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #222;
+}
+
+.metadata-item:last-child {
+    border-bottom: none;
+}
+
+.metadata-label {
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metadata-item span:last-child {
+    color: #fff;
+    font-weight: 500;
+    font-size: 12px;
+}
+
 /* LAB page responsive styles */
 @media (max-width: 768px) {
     .lab-container {
