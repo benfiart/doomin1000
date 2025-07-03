@@ -194,32 +194,24 @@ class AILab {
         } catch (error) {
             console.error('❌ Generation failed:', error);
             
-            // Display detailed error information
             let errorMessage = `Error: ${error.message}\n\n`;
             
-            // Try to parse response for additional error details
+            // Try to get response data for detailed error info
             try {
-                const errorData = JSON.parse(error.message);
-                if (errorData.errorType) {
-                    errorMessage += `Type: ${errorData.errorType}\n`;
-                }
-                if (errorData.timestamp) {
-                    errorMessage += `Time: ${errorData.timestamp}\n`;
-                }
-                if (errorData.details) {
-                    errorMessage += `\nRequest Details:\n`;
-                    errorMessage += `Model: ${errorData.details.model}\n`;
-                    errorMessage += `Temperature: ${errorData.details.temperature}\n`;
-                    errorMessage += `Max Tokens: ${errorData.details.maxTokens}\n`;
-                    errorMessage += `Prompt: ${errorData.details.prompt}\n`;
+                // Check if it's a fetch error with response data
+                if (data && !data.success) {
+                    errorMessage = this.formatDetailedError(data);
+                } else {
+                    // Generic error handling
+                    errorMessage += `This appears to be a network or function error.\n`;
+                    errorMessage += `Try selecting a different model or check your connection.`;
                 }
             } catch (parseError) {
-                // If it's not JSON, just show the original error
-                errorMessage = `Error: ${error.message}\n\nThis is likely a network or API issue. Check your internet connection and try again.`;
+                errorMessage += `Network or function error. Try again with a different model.`;
             }
             
             this.outputTextarea.value = errorMessage;
-            this.generationStatus.textContent = 'Generation failed - see output for details';
+            this.generationStatus.textContent = 'Generation failed - see detailed error below';
             this.updateCharacterCount();
         } finally {
             // Re-enable UI
@@ -337,6 +329,34 @@ class AILab {
                 alert('Failed to copy to clipboard. Please select and copy manually.');
             }
         }
+    }
+
+    formatDetailedError(errorData) {
+        let message = `❌ ${errorData.error}\n\n`;
+        
+        if (errorData.errorCategory) {
+            message += `Category: ${errorData.errorCategory}\n`;
+        }
+        
+        if (errorData.details) {
+            message += `\n📋 Request Details:\n`;
+            message += `Model: ${errorData.details.model}\n`;
+            message += `Temperature: ${errorData.details.temperature}\n`;
+            message += `Max Tokens: ${errorData.details.maxTokens}\n`;
+            if (errorData.details.prompt) {
+                message += `Prompt: ${errorData.details.prompt}\n`;
+            }
+        }
+        
+        if (errorData.details?.suggestion) {
+            message += `\n💡 Suggestion: ${errorData.details.suggestion}`;
+        }
+        
+        if (errorData.timestamp) {
+            message += `\n\n🕐 Time: ${new Date(errorData.timestamp).toLocaleString()}`;
+        }
+        
+        return message;
     }
 }
 
