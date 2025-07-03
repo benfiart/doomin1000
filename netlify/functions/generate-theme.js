@@ -61,14 +61,15 @@ exports.handler = async (event, context) => {
         console.log('🎯 Generating new chat theme...');
 
         // Validate environment variables
-        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY || !process.env.GEMINI_API_KEY) {
+        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+        if (!process.env.SUPABASE_URL || !supabaseKey || !process.env.GEMINI_API_KEY) {
             throw new Error('Missing required environment variables');
         }
 
         // Initialize Supabase client
         const supabase = createClient(
             process.env.SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_KEY
+            supabaseKey
         );
 
         // Generate a random theme number for variety
