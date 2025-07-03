@@ -9,6 +9,7 @@ class AILab {
         this.temperatureInput = document.getElementById('temperature-input');
         this.temperatureValue = document.getElementById('temperature-value');
         this.tokensInput = document.getElementById('tokens-input');
+        this.tokensWordCount = document.getElementById('tokens-word-count');
         this.generateBtn = document.getElementById('generate-btn');
         this.clearBtn = document.getElementById('clear-btn');
         this.outputTextarea = document.getElementById('output-textarea');
@@ -30,6 +31,7 @@ class AILab {
 
         this.initializeEventListeners();
         this.updateTemperatureDisplay();
+        this.updateTokensDisplay();
         this.updateCharacterCount();
     }
 
@@ -46,6 +48,9 @@ class AILab {
 
         // Temperature slider
         this.temperatureInput.addEventListener('input', () => this.updateTemperatureDisplay());
+        
+        // Tokens input
+        this.tokensInput.addEventListener('input', () => this.updateTokensDisplay());
 
         // Generate button
         this.generateBtn.addEventListener('click', () => this.generate());
@@ -126,6 +131,12 @@ class AILab {
 
     updateTemperatureDisplay() {
         this.temperatureValue.textContent = this.temperatureInput.value;
+    }
+
+    updateTokensDisplay() {
+        const tokens = parseInt(this.tokensInput.value) || 0;
+        const estimatedWords = Math.round(tokens * 0.75);
+        this.tokensWordCount.textContent = `~${estimatedWords} words`;
     }
 
     updateCharacterCount() {
