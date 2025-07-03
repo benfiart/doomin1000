@@ -78,11 +78,8 @@ class AILab {
         // Get preset type
         const presetType = clickedBtn.dataset.preset;
         
-        // Update prompt textarea
+        // Update prompt textarea (keep placeholders, don't substitute)
         this.promptInput.value = this.presets[presetType];
-        
-        // Update variables in prompt
-        this.updatePromptVariables();
 
         console.log(`📝 Selected preset: ${presetType}`);
     }
