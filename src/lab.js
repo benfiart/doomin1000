@@ -135,9 +135,11 @@ class AILab {
     }
 
     async generate() {
-        // First, ensure variables are substituted before getting the prompt
-        this.updatePromptVariables();
+        // Store original prompt with placeholders
+        const originalPrompt = this.promptInput.value.trim();
         
+        // Create substituted version for API call
+        this.updatePromptVariables();
         const prompt = this.promptInput.value.trim();
         
         if (!prompt) {
@@ -211,6 +213,9 @@ class AILab {
             this.generationStatus.textContent = 'Generation failed - see detailed error below';
             this.updateCharacterCount();
         } finally {
+            // Restore original prompt with placeholders
+            this.promptInput.value = originalPrompt;
+            
             // Re-enable UI
             this.generateBtn.disabled = false;
             this.generateBtn.textContent = 'Generate';
