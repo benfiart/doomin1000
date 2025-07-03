@@ -114,8 +114,20 @@ class IRCChat {
         this.changeNicknameButton = document.getElementById('changeNicknameButton');
         this.themeTextElement = document.getElementById('chat-theme-text');
         this.themeDayElement = document.getElementById('chat-theme-day');
+        this.statusIndicator = document.getElementById('status-indicator');
+        this.statusText = document.getElementById('status-text');
         this.isOnline = navigator.onLine;
         this.supabaseClient = null;
+        
+        // WebSocket connection management
+        this.connectionState = 'disconnected'; // 'connecting', 'connected', 'disconnected', 'reconnecting'
+        this.reconnectAttempts = 0;
+        this.maxReconnectDelay = 30000; // 30 seconds max
+        this.heartbeatInterval = null;
+        this.reconnectTimeout = null;
+        
+        // Initialize status display
+        this.updateConnectionStatus();
         
         this.initializeEventListeners();
         this.loadMessagesFromServer();
@@ -125,13 +137,23 @@ class IRCChat {
         // Set up real-time postgres changes subscriptions
         this.setupRealtimeSubscription();
         
-        // Check connection status
+        // Enhanced online/offline handling
         window.addEventListener('online', () => {
+            console.log('🌐 Back online - reconnecting...');
             this.isOnline = true;
-            this.syncWithServer();
+            this.reconnectAttempts = 0; // Reset attempts when back online
+            this.reconnectWebSocket();
         });
         window.addEventListener('offline', () => {
+            console.log('📵 Gone offline - stopping connections');
             this.isOnline = false;
+            this.connectionState = 'disconnected';
+            this.updateConnectionStatus();
+            this.stopHeartbeat();
+            if (this.reconnectTimeout) {
+                clearTimeout(this.reconnectTimeout);
+                this.reconnectTimeout = null;
+            }
         });
     }
 
@@ -219,6 +241,19 @@ class IRCChat {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    updateConnectionStatus() {
+        this.statusIndicator.className = `status-indicator ${this.connectionState}`;
+        
+        const statusMessages = {
+            'connecting': 'Connecting...',
+            'connected': 'Connected',
+            'disconnected': 'Disconnected',
+            'reconnecting': `Reconnecting... (attempt ${this.reconnectAttempts})`
+        };
+        
+        this.statusText.textContent = statusMessages[this.connectionState] || 'Unknown';
     }
 
     scrollToBottom() {
@@ -413,12 +448,76 @@ class IRCChat {
     }
 
     async syncWithServer() {
-        // When back online, reload messages from server
-        await this.loadMessagesFromServer();
+        // Force fresh data fetch with cache-busting
+        console.log('🔄 Syncing with server - fetching fresh data...');
+        try {
+            const timestamp = Date.now();
+            const response = await fetch(`/.netlify/functions/get-messages?t=${timestamp}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.messages) {
+                    console.log(`📥 Fresh sync: loaded ${data.messages.length} messages`);
+                    this.messages = data.messages.map(msg => ({
+                        ...msg,
+                        timestamp: new Date(msg.timestamp)
+                    }));
+                    this.renderAllMessages();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to sync with server:', error);
+        }
+    }
+
+    getReconnectDelay() {
+        // Exponential backoff: 1s, 2s, 4s, 8s, 16s, max 30s
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
+        return delay;
+    }
+
+    async reconnectWebSocket() {
+        if (!this.isOnline) {
+            console.log('⏸️ Not attempting reconnect while offline');
+            return;
+        }
+
+        if (this.connectionState === 'connecting' || this.connectionState === 'connected') {
+            console.log('⏸️ Already connected or connecting');
+            return;
+        }
+
+        this.connectionState = 'reconnecting';
+        this.reconnectAttempts++;
+        this.updateConnectionStatus();
+        const delay = this.getReconnectDelay();
+        
+        console.log(`🔄 Attempting WebSocket reconnect #${this.reconnectAttempts} in ${delay}ms...`);
+        
+        this.reconnectTimeout = setTimeout(async () => {
+            try {
+                await this.setupRealtimeSubscription();
+                
+                // If successful, sync fresh data and reset attempts
+                if (this.connectionState === 'connected') {
+                    await this.syncWithServer();
+                    this.reconnectAttempts = 0;
+                    console.log('✅ WebSocket reconnected successfully');
+                }
+            } catch (error) {
+                console.error(`❌ Reconnect attempt #${this.reconnectAttempts} failed:`, error);
+                // Try again with longer delay
+                this.reconnectWebSocket();
+            }
+        }, delay);
     }
 
     async setupRealtimeSubscription() {
         try {
+            // Clean up existing connections
+            this.stopRealtimeSubscription();
+            
+            this.connectionState = 'connecting';
+            this.updateConnectionStatus();
             console.log('🔄 Setting up real-time subscription...');
             
             // Get Supabase config from server
@@ -439,7 +538,7 @@ class IRCChat {
                 config.supabaseAnonKey
             );
 
-            // Subscribe to postgres changes (simple method from Supabase docs)
+            // Subscribe to postgres changes with enhanced error handling
             this.subscription = this.supabaseClient
                 .channel('schema-db-changes')
                 .on('postgres_changes', {
@@ -451,7 +550,6 @@ class IRCChat {
                         this.handleNewMessage(payload.new);
                     } else if (payload.eventType === 'DELETE') {
                         console.log('🗑️ Messages cleared via postgres changes');
-                        // Only handle if we have messages to clear (prevent loop)
                         if (this.messages.length > 0) {
                             this.handleMessagesCleared();
                         }
@@ -459,17 +557,56 @@ class IRCChat {
                 })
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
-                        console.log('✅ Real-time postgres changes subscribed successfully');
-                    } else if (status === 'CHANNEL_ERROR') {
-                        console.error('❌ Real-time error - falling back to polling');
-                        this.startPolling();
+                        this.connectionState = 'connected';
+                        this.reconnectAttempts = 0; // Reset on successful connection
+                        this.updateConnectionStatus();
+                        console.log('✅ WebSocket connected successfully');
+                        this.startHeartbeat();
+                    } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+                        console.error(`❌ WebSocket error: ${status}`);
+                        this.connectionState = 'disconnected';
+                        this.updateConnectionStatus();
+                        this.stopHeartbeat();
+                        // Attempt to reconnect
+                        this.reconnectWebSocket();
                     }
                 });
         } catch (error) {
             console.error('Failed to set up real-time subscription:', error);
-            console.error('Error details:', error.message, error.stack);
-            // Fallback to polling if real-time fails
-            this.startPolling();
+            this.connectionState = 'disconnected';
+            this.updateConnectionStatus();
+            // Attempt to reconnect
+            this.reconnectWebSocket();
+        }
+    }
+
+    startHeartbeat() {
+        // Clear any existing heartbeat
+        this.stopHeartbeat();
+        
+        // Send heartbeat every 30 seconds to detect silent disconnections
+        this.heartbeatInterval = setInterval(() => {
+            if (this.connectionState === 'connected' && this.supabaseClient) {
+                // Simple presence update to test connection
+                this.supabaseClient
+                    .channel('heartbeat')
+                    .subscribe((status) => {
+                        if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+                            console.log('💔 Heartbeat failed - connection lost');
+                            this.connectionState = 'disconnected';
+                            this.updateConnectionStatus();
+                            this.stopHeartbeat();
+                            this.reconnectWebSocket();
+                        }
+                    });
+            }
+        }, 30000);
+    }
+
+    stopHeartbeat() {
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+            this.heartbeatInterval = null;
         }
     }
 
@@ -500,39 +637,22 @@ class IRCChat {
         this.messagesContainer.innerHTML = '<div class="status">Chat history cleared for everyone! 🗑️</div>';
     }
 
-    startPolling() {
-        // Fallback polling method (only used if WebSocket fails)
-        console.log('Falling back to polling method');
-        this.pollingInterval = setInterval(async () => {
-            if (this.isOnline) {
-                try {
-                    const response = await fetch('/.netlify/functions/get-messages');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.messages) {
-                            if (data.messages.length !== this.messages.length) {
-                                this.messages = data.messages.map(msg => ({
-                                    ...msg,
-                                    timestamp: new Date(msg.timestamp)
-                                }));
-                                this.renderAllMessages();
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Polling error:', error);
-                }
-            }
-        }, 3000);
-    }
 
     stopRealtimeSubscription() {
+        this.stopHeartbeat();
+        
         if (this.subscription) {
             this.supabaseClient.removeChannel(this.subscription);
+            this.subscription = null;
         }
-        if (this.pollingInterval) {
-            clearInterval(this.pollingInterval);
+        
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
         }
+        
+        this.connectionState = 'disconnected';
+        this.updateConnectionStatus();
     }
 
     // ================================

@@ -611,6 +611,42 @@ body.chat-page .footer {
     border-radius: 10px;
 }
 
+.connection-status {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.status-indicator {
+    margin-right: 8px;
+    font-size: 10px;
+}
+
+.status-indicator.connected {
+    color: #26de81;
+}
+
+.status-indicator.connecting {
+    color: #f9ca24;
+}
+
+.status-indicator.disconnected {
+    color: #ff6b6b;
+}
+
+.status-indicator.reconnecting {
+    color: #fd79a8;
+}
+
+.status-text {
+    color: #ccc;
+    font-size: 11px;
+}
+
 .messages {
     flex-grow: 1;
     background-color: rgba(17, 17, 17, 0.5);
