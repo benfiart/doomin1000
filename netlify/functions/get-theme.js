@@ -1,9 +1,16 @@
-// Get latest chat theme from database
+// Get latest content (theme, news, etc.) from database
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event, context) => {
+    // Fallback content (define outside try block for access in catch)
+    const fallbacks = {
+        theme: "How do you find meaning when everything feels uncertain?",
+        news: "Scientists discover new insights about time perception during life transitions.",
+        quote: "Every moment brings us closer to understanding our purpose in this grand countdown."
+    };
+
     try {
-        console.log('📖 Fetching latest chat theme...');
+        console.log('📖 Fetching latest content...');
 
         // Validate environment variables
         if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
@@ -16,10 +23,10 @@ exports.handler = async (event, context) => {
             process.env.SUPABASE_SERVICE_KEY
         );
 
-        // Get the most recent theme from daily_content table
+        // Get the most recent content from daily_content table
         const { data, error } = await supabase
             .from('daily_content')
-            .select('chat_theme, day_number, created_at')
+            .select('chat_theme, daily_news, main_quote, day_number, created_at')
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -27,9 +34,6 @@ exports.handler = async (event, context) => {
         if (error) {
             throw new Error(`Database query failed: ${error.message}`);
         }
-
-        // If no theme exists, return fallback
-        const fallbackTheme = "How do you find meaning when everything feels uncertain?";
         
         return {
             statusCode: 200,
@@ -39,14 +43,16 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({
                 success: true,
-                theme: data ? data.chat_theme : fallbackTheme,
+                theme: data ? data.chat_theme : fallbacks.theme,
+                news: data ? data.daily_news : fallbacks.news,
+                quote: data ? data.main_quote : fallbacks.quote,
                 day_number: data ? data.day_number : 1,
                 from_database: !!data
             })
         };
 
     } catch (error) {
-        console.error('❌ Failed to get theme:', error);
+        console.error('❌ Failed to get content:', error);
         
         return {
             statusCode: 500,
@@ -57,7 +63,9 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 success: false,
                 error: error.message,
-                theme: "How do you find meaning when everything feels uncertain?", // Fallback
+                theme: fallbacks.theme,
+                news: fallbacks.news,
+                quote: fallbacks.quote,
                 from_database: false
             })
         };

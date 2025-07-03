@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>LAB - Doom in 1000</title>
+    
+    <!-- Local fonts with instant loading -->
+    <link rel="stylesheet" href="/fonts/montserrat.css">
+    
+    <link rel="stylesheet" href="styles.css?v=10&t=1735773600">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <a href="/">Clock</a>
+                <a href="/chat">Chat</a>
+                <a href="/lab" class="active">Lab</a>
+            </nav>
+            <h1>AI GENERATION LAB</h1>
+            <p class="subtext">Experiment with prompts, models, and parameters. Test and refine AI generation logic in real-time.</p>
+        </header>
+
+        <main class="lab-main">
+            <div class="lab-container">
+                <!-- Prompt Section -->
+                <section class="lab-section">
+                    <h2>Prompt Engineering</h2>
+                    <div class="prompt-presets">
+                        <button class="preset-btn active" data-preset="quote">Quote Prompt</button>
+                        <button class="preset-btn" data-preset="theme">Theme Prompt</button>
+                        <button class="preset-btn" data-preset="news">News Prompt</button>
+                        <button class="preset-btn" data-preset="custom">Custom</button>
+                    </div>
+                    <textarea id="prompt-input" class="prompt-textarea" rows="6" placeholder="Enter your prompt here...">Generate a unique philosophical quote about {theme} for day {dayNumber} of 1000. Make it thought-provoking and distinct, 15-25 words. Focus on {theme} specifically. Return only the quote text.</textarea>
+                    <div class="prompt-actions">
+                        <button type="button" id="copy-prompt-btn" class="copy-prompt-button">Copy Prompt</button>
+                        <p class="variable-help">Use {theme} and {dayNumber} in your prompt to insert values below</p>
+                    </div>
+                    <div class="prompt-variables">
+                        <div class="variable-group">
+                            <label for="theme-input">Theme:</label>
+                            <div class="variable-input-group">
+                                <input type="text" id="theme-input" value="time and urgency" placeholder="Enter theme...">
+                                <button type="button" class="insert-btn" data-variable="{theme}">Insert {theme}</button>
+                            </div>
+                        </div>
+                        <div class="variable-group">
+                            <label for="day-input">Day Number:</label>
+                            <div class="variable-input-group">
+                                <input type="number" id="day-input" value="388" min="1" max="1000" placeholder="Day...">
+                                <button type="button" class="insert-btn" data-variable="{dayNumber}">Insert {dayNumber}</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Model Configuration -->
+                <section class="lab-section">
+                    <h2>Model Configuration</h2>
+                    <div class="model-config">
+                        <div class="config-group">
+                            <label for="model-select">Gemini Model:</label>
+                            <select id="model-select">
+                                <option value="gemini-1.5-flash-latest" selected>Gemini 1.5 Flash (Fast)</option>
+                                <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Quality)</option>
+                                <option value="gemini-pro">Gemini Pro (Legacy)</option>
+                            </select>
+                        </div>
+                        <div class="config-group">
+                            <label for="temperature-input">Temperature: <span id="temperature-value">0.7</span></label>
+                            <input type="range" id="temperature-input" min="0.1" max="1.0" step="0.1" value="0.7">
+                            <small class="config-help">Controls randomness: 0.1 = focused/deterministic, 1.0 = creative/random</small>
+                        </div>
+                        <div class="config-group">
+                            <label for="tokens-input">Max Tokens:</label>
+                            <input type="number" id="tokens-input" value="100" min="10" max="1000" placeholder="100">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Generation Section -->
+                <section class="lab-section">
+                    <h2>Generation</h2>
+                    <div class="generation-controls">
+                        <button id="generate-btn" class="generate-button">Generate</button>
+                        <button id="clear-btn" class="clear-button">Clear Output</button>
+                        <div class="generation-info">
+                            <span id="generation-status">Ready to generate</span>
+                            <span id="character-count">0 characters</span>
+                        </div>
+                    </div>
+                    <textarea id="output-textarea" class="output-textarea" rows="8" placeholder="Generated content will appear here..." readonly></textarea>
+                    <div class="output-actions">
+                        <button id="copy-btn" class="copy-button">Copy Output</button>
+                        <button id="use-as-prompt-btn" class="use-prompt-button">Use as New Prompt</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>Made with love and Matej's vision.</p>
+        <div class="install-info-static">
+            <span class="install-minimal">Share → Add to Home Screen to keep this app</span>
+        </div>
+    </footer>
+
+    <script src="lab.js?v=1"></script>
+</body>
+</html>

@@ -919,3 +919,467 @@ body.chat-page .footer {
         margin-bottom: 5px;
     }
 }
+
+/* ========================================
+   LAB PAGE STYLES
+   ======================================== */
+
+.lab-main {
+    background: none;
+    padding: 20px 0;
+}
+
+.lab-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.lab-section {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.lab-section h2 {
+    color: var(--accent-color);
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Prompt Section */
+.prompt-presets {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #ccc;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+.preset-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #000;
+    font-weight: bold;
+}
+
+.prompt-textarea {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 120px;
+}
+
+.prompt-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.prompt-variables {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.variable-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.variable-group label {
+    color: #ccc;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.variable-group input {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+}
+
+.variable-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.prompt-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.copy-prompt-button {
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ccc;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.copy-prompt-button:hover {
+    background: #444;
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+.variable-help {
+    color: #888;
+    font-size: 12px;
+    font-style: italic;
+    margin: 0;
+    text-align: center;
+}
+
+.variable-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.variable-input-group input {
+    flex: 1;
+}
+
+.insert-btn {
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #ccc;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.insert-btn:hover {
+    background: #444;
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+/* Model Configuration */
+.model-config {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+.config-group label {
+    color: #ccc;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.config-group select,
+.config-group input[type="number"] {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+}
+
+.config-group select:focus,
+.config-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.config-group input[type="range"] {
+    width: 100%;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    cursor: pointer;
+    outline: none;
+}
+
+.config-group input[type="range"]::-webkit-slider-track {
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    border-radius: 2px;
+    border: none;
+}
+
+.config-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: none;
+    box-shadow: none;
+}
+
+.config-group input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    border-radius: 2px;
+    border: none;
+}
+
+.config-group input[type="range"]::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: none;
+    box-shadow: none;
+}
+
+.config-help {
+    color: #888;
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.3;
+}
+
+/* Generation Section */
+.generation-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.generate-button {
+    background: linear-gradient(135deg, var(--accent-color), #cc0000);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    padding: 12px 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.generate-button:hover {
+    background: linear-gradient(135deg, #ff3333, var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+}
+
+.generate-button:disabled {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.clear-button {
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ccc;
+    padding: 8px 15px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.clear-button:hover {
+    background: #444;
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+.generation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-left: auto;
+    text-align: right;
+}
+
+.generation-info span {
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.output-textarea {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 150px;
+    margin-bottom: 15px;
+}
+
+.output-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+}
+
+.output-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.copy-button,
+.use-prompt-button {
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #ccc;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.copy-button:hover,
+.use-prompt-button:hover {
+    background: #333;
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+/* LAB page responsive styles */
+@media (max-width: 768px) {
+    .lab-container {
+        padding: 0 15px;
+    }
+
+    .lab-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .prompt-presets {
+        justify-content: center;
+    }
+
+    .model-config {
+        grid-template-columns: 1fr;
+    }
+
+    .prompt-variables {
+        grid-template-columns: 1fr;
+    }
+
+    .generation-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generation-info {
+        margin-left: 0;
+        text-align: left;
+    }
+
+    .output-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .lab-container {
+        padding: 0 10px;
+    }
+
+    .lab-section {
+        padding: 15px;
+    }
+
+    .lab-section h2 {
+        font-size: 16px;
+    }
+
+    .preset-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .prompt-textarea,
+    .output-textarea {
+        font-size: 12px;
+        padding: 12px;
+    }
+
+    .generate-button {
+        padding: 10px 20px;
+        font-size: 12px;
+    }
+}
