@@ -575,6 +575,30 @@ body.chat-page .footer {
     margin-bottom: 15px;
 }
 
+.generate-theme-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.generate-theme-button:hover {
+    background-color: #cc0000;
+}
+
+.generate-theme-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
     .chat-theme {
         margin: 15px 20px;

@@ -116,6 +116,7 @@ class IRCChat {
         this.themeDayElement = document.getElementById('chat-theme-day');
         this.statusIndicator = document.getElementById('status-indicator');
         this.statusText = document.getElementById('status-text');
+        this.generateThemeBtn = document.getElementById('generate-theme-btn');
         this.isOnline = navigator.onLine;
         this.supabaseClient = null;
         
@@ -132,7 +133,7 @@ class IRCChat {
         this.initializeEventListeners();
         this.loadMessagesFromServer();
         this.loadNickname();
-        this.loadDailyTheme();
+        this.loadThemeFromDatabase();
         
         // Initialize Supabase client once, then set up real-time subscriptions
         this.initializeSupabaseClient();
@@ -171,6 +172,7 @@ class IRCChat {
         });
         this.clearChatButton.addEventListener('click', () => this.clearChat());
         this.changeNicknameButton.addEventListener('click', () => this.changeNickname());
+        this.generateThemeBtn.addEventListener('click', () => this.generateNewTheme());
     }
 
     async sendMessage() {
@@ -733,26 +735,52 @@ class IRCChat {
         return Math.max(1, daysPassed);
     }
 
-    async loadDailyTheme() {
-        const dayNumber = this.getCurrentDayNumber();
-        this.themeDayElement.textContent = `Day ${dayNumber}`;
-        
+    async loadThemeFromDatabase() {
         try {
-            const theme = await getDailyChatTheme(dayNumber);
-            this.updateThemeDisplay(theme);
+            console.log('📖 Loading theme from database...');
+            const response = await fetch('/.netlify/functions/get-theme');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.themeTextElement.textContent = data.theme;
+                this.themeDayElement.textContent = data.from_database ? `From Database` : `Fallback`;
+                console.log('✅ Theme loaded:', data.theme);
+            } else {
+                throw new Error(data.error);
+            }
         } catch (error) {
-            console.warn('Failed to load daily theme:', error);
-            this.updateThemeDisplay({
-                text: FALLBACK_THEMES[dayNumber % FALLBACK_THEMES.length],
-                day: dayNumber,
-                date: new Date().toDateString()
-            });
+            console.error('Failed to load theme from database:', error);
+            this.themeTextElement.textContent = "How do you find meaning when everything feels uncertain?";
+            this.themeDayElement.textContent = "Fallback";
         }
     }
 
-    updateThemeDisplay(theme) {
-        this.themeDayElement.textContent = `Day ${theme.day}`;
-        this.themeTextElement.textContent = theme.text;
+    async generateNewTheme() {
+        try {
+            this.generateThemeBtn.disabled = true;
+            this.generateThemeBtn.textContent = 'Generating...';
+            
+            console.log('🎯 Generating new theme...');
+            const response = await fetch('/.netlify/functions/generate-theme', {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.themeTextElement.textContent = data.theme.chat_theme;
+                this.themeDayElement.textContent = 'Just Generated';
+                console.log('✅ New theme generated:', data.theme.chat_theme);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('Failed to generate new theme:', error);
+            alert('Failed to generate new theme. Please try again.');
+        } finally {
+            this.generateThemeBtn.disabled = false;
+            this.generateThemeBtn.textContent = 'Generate New Theme';
+        }
     }
 }
 
