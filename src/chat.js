@@ -134,8 +134,8 @@ class IRCChat {
         this.loadNickname();
         this.loadDailyTheme();
         
-        // Set up real-time postgres changes subscriptions
-        this.setupRealtimeSubscription();
+        // Initialize Supabase client once, then set up real-time subscriptions
+        this.initializeSupabaseClient();
         
         // Enhanced online/offline handling
         window.addEventListener('online', () => {
@@ -447,6 +447,42 @@ class IRCChat {
         return data.message;
     }
 
+    async initializeSupabaseClient() {
+        try {
+            console.log('🔄 Initializing Supabase client...');
+            
+            // Get Supabase config from server
+            const configResponse = await fetch('/.netlify/functions/get-config');
+            if (!configResponse.ok) {
+                throw new Error(`Config fetch failed: ${configResponse.status}`);
+            }
+            const config = await configResponse.json();
+            
+            if (!config.success) {
+                throw new Error('Invalid config response');
+            }
+
+            // Import Supabase client and create single instance
+            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            this.supabaseClient = createClient(
+                config.supabaseUrl,
+                config.supabaseAnonKey
+            );
+            
+            console.log('✅ Supabase client initialized');
+            
+            // Now set up real-time subscription using existing client
+            this.setupRealtimeSubscription();
+            
+        } catch (error) {
+            console.error('Failed to initialize Supabase client:', error);
+            this.connectionState = 'disconnected';
+            this.updateConnectionStatus();
+            // Try to reconnect
+            this.reconnectWebSocket();
+        }
+    }
+
     async syncWithServer() {
         // Force fresh data fetch with cache-busting
         console.log('🔄 Syncing with server - fetching fresh data...');
@@ -495,7 +531,13 @@ class IRCChat {
         
         this.reconnectTimeout = setTimeout(async () => {
             try {
-                await this.setupRealtimeSubscription();
+                // If client doesn't exist, reinitialize everything
+                if (!this.supabaseClient) {
+                    await this.initializeSupabaseClient();
+                } else {
+                    // Client exists, just reconnect subscription
+                    await this.setupRealtimeSubscription();
+                }
                 
                 // If successful, sync fresh data and reset attempts
                 if (this.connectionState === 'connected') {
@@ -513,30 +555,18 @@ class IRCChat {
 
     async setupRealtimeSubscription() {
         try {
-            // Clean up existing connections
-            this.stopRealtimeSubscription();
+            // Clean up existing subscription (but keep client)
+            this.cleanupSubscription();
+            
+            // Skip if client not initialized yet
+            if (!this.supabaseClient) {
+                console.log('⏸️ Supabase client not ready, skipping subscription setup');
+                return;
+            }
             
             this.connectionState = 'connecting';
             this.updateConnectionStatus();
             console.log('🔄 Setting up real-time subscription...');
-            
-            // Get Supabase config from server
-            const configResponse = await fetch('/.netlify/functions/get-config');
-            if (!configResponse.ok) {
-                throw new Error(`Config fetch failed: ${configResponse.status}`);
-            }
-            const config = await configResponse.json();
-            
-            if (!config.success) {
-                throw new Error('Invalid config response');
-            }
-
-            // Import Supabase client directly in the browser
-            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-            this.supabaseClient = createClient(
-                config.supabaseUrl,
-                config.supabaseAnonKey
-            );
 
             // Subscribe to postgres changes with enhanced error handling
             this.subscription = this.supabaseClient
@@ -610,6 +640,21 @@ class IRCChat {
         }
     }
 
+    cleanupSubscription() {
+        // Clean up subscription without destroying the client
+        this.stopHeartbeat();
+        
+        if (this.subscription) {
+            this.supabaseClient?.removeChannel(this.subscription);
+            this.subscription = null;
+        }
+        
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+    }
+
     handleNewMessage(newMessage) {
         // Add the new message to our local array
         const message = {
@@ -639,17 +684,8 @@ class IRCChat {
 
 
     stopRealtimeSubscription() {
-        this.stopHeartbeat();
-        
-        if (this.subscription) {
-            this.supabaseClient.removeChannel(this.subscription);
-            this.subscription = null;
-        }
-        
-        if (this.reconnectTimeout) {
-            clearTimeout(this.reconnectTimeout);
-            this.reconnectTimeout = null;
-        }
+        // Clean up subscriptions and timers
+        this.cleanupSubscription();
         
         this.connectionState = 'disconnected';
         this.updateConnectionStatus();
