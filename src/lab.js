@@ -138,6 +138,9 @@ class AILab {
     }
 
     async generate() {
+        // First, ensure variables are substituted before getting the prompt
+        this.updatePromptVariables();
+        
         const prompt = this.promptInput.value.trim();
         
         if (!prompt) {
