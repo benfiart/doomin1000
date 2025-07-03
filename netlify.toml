@@ -29,6 +29,5 @@
     Cache-Control = "public, max-age=31536000"
 
 # Scheduled Functions
-[[functions]]
-  path = "functions/generate-daily-content.js"
+[functions."generate-daily-content"]
   schedule = "0 10 * * *"  # 10:00 UTC = 00:00 UTC+14 (earliest timezone)
