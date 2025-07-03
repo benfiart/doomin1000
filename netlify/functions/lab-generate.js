@@ -91,13 +91,21 @@ exports.handler = async (event, context) => {
             throw new Error('Prompt is required');
         }
 
-        // Validate model
+        // Validate model - use working model names
         const allowedModels = [
             'gemini-1.5-flash-latest',
-            'gemini-1.5-pro-latest',
+            'gemini-1.5-flash',
             'gemini-pro'
         ];
-        if (!allowedModels.includes(model)) {
+        
+        // Map Pro model requests to working alternatives
+        let actualModel = model;
+        if (model === 'gemini-1.5-pro-latest') {
+            console.log('⚠️ gemini-1.5-pro-latest not available, using gemini-pro instead');
+            actualModel = 'gemini-pro';
+        }
+        
+        if (!allowedModels.includes(actualModel)) {
             throw new Error(`Invalid model. Allowed models: ${allowedModels.join(', ')}`);
         }
 
@@ -113,12 +121,12 @@ exports.handler = async (event, context) => {
             throw new Error('Max tokens must be between 10 and 1000');
         }
 
-        console.log(`🎯 Generating with model: ${model}, temp: ${tempNum}, tokens: ${tokensNum}`);
+        console.log(`🎯 Generating with model: ${actualModel} (requested: ${model}), temp: ${tempNum}, tokens: ${tokensNum}`);
         console.log(`📝 Prompt: ${prompt.substring(0, 100)}...`);
 
         // Generate with Gemini - no fallbacks, let errors bubble up
         const startTime = Date.now();
-        const generatedText = await generateWithGemini(prompt, model, tempNum, tokensNum);
+        const generatedText = await generateWithGemini(prompt, actualModel, tempNum, tokensNum);
         const duration = Date.now() - startTime;
         
         console.log(`⏱️ Generation completed in ${duration}ms`);
