@@ -91,12 +91,13 @@ exports.handler = async (event, context) => {
             throw new Error('Prompt is required');
         }
 
-        // Validate model - latest available Flash models
+        // Validate model - latest available models
         const allowedModels = [
             'gemini-2.0-flash',
-            'gemini-2.0-flash-experimental',
             'gemini-1.5-flash',
-            'gemini-1.5-flash-8b'
+            'gemini-1.5-flash-8b',
+            'gemini-1.5-pro',
+            'gemini-2.5-pro-experimental'
         ];
         
         if (!allowedModels.includes(model)) {
