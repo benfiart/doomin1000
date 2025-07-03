@@ -111,6 +111,7 @@ class AILab {
         console.log(`📝 Inserted variable: ${variable}`);
     }
 
+
     updatePromptVariables() {
         const currentPrompt = this.promptInput.value;
         const theme = this.themeInput.value || 'time and urgency';
