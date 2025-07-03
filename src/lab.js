@@ -65,9 +65,8 @@ class AILab {
         // Output textarea for character counting
         this.outputTextarea.addEventListener('input', () => this.updateCharacterCount());
 
-        // Variable inputs for real-time prompt updating
-        this.themeInput.addEventListener('input', () => this.updatePromptVariables());
-        this.dayInput.addEventListener('input', () => this.updatePromptVariables());
+        // Variable inputs removed - no real-time substitution
+        // Variables are only substituted during generation to preserve placeholders
     }
 
     selectPreset(clickedBtn) {
