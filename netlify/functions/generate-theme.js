@@ -85,11 +85,17 @@ exports.handler = async (event, context) => {
         }
 
         // Store in database - use existing daily_content table structure
-        const timestamp = Date.now();
+        // Use a simple incrementing number or current count + 1
+        const { count } = await supabase
+            .from('daily_content')
+            .select('*', { count: 'exact', head: true });
+        
+        const nextDayNumber = (count || 0) + 1;
+        
         const { data, error } = await supabase
             .from('daily_content')
             .insert({
-                day_number: timestamp, // Use timestamp as unique day number for now
+                day_number: nextDayNumber,
                 date_generated: new Date().toISOString().split('T')[0],
                 main_quote: "Generated via button", // Placeholder
                 chat_theme: generatedTheme
